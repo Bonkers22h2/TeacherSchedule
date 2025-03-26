@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+
+    <div class="container mt-5">
+
+        <h2 class="mb-4 text-center">teach</h2>
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Gender</th>
+                    <th>Birthdate</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Subjects</th>
+                    <th>Grade Levels</th>
+                    <th>Experience</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="teacher : ${teachers}">
+                    <td th:text="${teacher.id}"></td>
+                    <td th:text="${teacher.lastName + ', ' + teacher.firstName + ' ' + teacher.middleName}"></td>
+                    <td th:text="${teacher.gender}"></td>
+                    <td th:text="${teacher.birthDate}"></td>
+                    <td th:text="${teacher.contactNumber}"></td>
+                    <td th:text="${teacher.email}"></td>
+                    <td th:text="${teacher.subjects}"></td>
+                    <td th:text="${teacher.gradeLevels}"></td>
+                    <td th:text="${teacher.yearsOfExperience + ' yrs'}"></td>
+                    <td th:text="${teacher.createdAt}"></td>
+                    <td style="white-space: nowrap">
+                        <a th:href="@{/teachers/edit(id=${teacher.id})}" class="btn btn-primary btn-sm">Edit</a>
+                        <a th:href="@{/teachers/delete(id=${teacher.id})}" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to delete this teacher?');">
+                            Delete
+                        </a>
+
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        <a href="/teachers/add" class="btn btn-success mb-3">+ Add Teacher</a>
+        <a href="/signin" class="btn btn-success mb-3">Sign out</a> 
+    </div>
+</body>
+
+</html>
