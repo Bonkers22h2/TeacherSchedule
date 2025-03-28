@@ -1,6 +1,7 @@
 package com.TeacherSchedule.TeacherSchedule.controllers;
 
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
+import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,24 @@ public class TeacherController {
 
         repo.deleteById(id);
         return "redirect:/teachers";
+    }
+
+    private final ScheduleService scheduleService;
+
+    public TeacherController(ScheduleService scheduleService) {
+        this.scheduleService = scheduleService;
+    }
+
+    @GetMapping("/schedule")
+    public String showSchedule(Model model) {
+        model.addAttribute("schedule", scheduleService.generateSchedule());
+        return "teachers/schedule"; // This must match the HTML filename inside `templates/teachers/`
+    }
+
+    @PostMapping("/generateSchedule")
+    public String generateSchedule(Model model) {
+        model.addAttribute("schedule", scheduleService.generateSchedule());
+        return "teachers/schedule";
     }
 
 }
