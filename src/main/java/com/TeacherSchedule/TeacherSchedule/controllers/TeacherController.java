@@ -1,5 +1,6 @@
 package com.TeacherSchedule.TeacherSchedule.controllers;
 
+import com.TeacherSchedule.TeacherSchedule.models.Schedule; // Add this import
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
@@ -98,14 +99,54 @@ public class TeacherController {
 
     @GetMapping("/schedule")
     public String showSchedule(Model model) {
-        model.addAttribute("schedule", scheduleService.generateSchedule());
-        return "teachers/schedule"; // This must match the HTML filename inside `templates/teachers/`
+        List<String> schedule = scheduleService.getCurrentSchedule();
+
+        // Validate schedule format
+        for (int i = 0; i < schedule.size(); i++) {
+            String[] parts = schedule.get(i).split(" - ");
+            if (parts.length < 4) {
+                schedule.set(i, schedule.get(i) + " - Unknown Section"); // Add default section if missing
+            }
+        }
+
+        model.addAttribute("schedule", schedule);
+        return "teachers/schedule";
     }
 
     @PostMapping("/generateSchedule")
-    public String generateSchedule(Model model) {
-        model.addAttribute("schedule", scheduleService.generateSchedule());
+    public String generateSchedule(@RequestParam("section") String section, Model model) {
+        try {
+            model.addAttribute("schedule", scheduleService.generateSchedule(section));
+        } catch (IllegalStateException e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("selectedSection", section); // Pass the selected section to the model
         return "teachers/schedule";
+    }
+
+    @PostMapping("/saveSchedule")
+    public String saveSchedule(@RequestParam("section") String section, HttpSession session, Model model) {
+        if (session.getAttribute("adminLoggedIn") == null) {
+            return "redirect:/signin";
+        }
+
+        scheduleService.saveSchedule(section);
+        model.addAttribute("selectedSection", section); // Pass the selected section to the model
+        return "redirect:/teachers/schedule";
+    }
+
+    @GetMapping("/allSchedules")
+    public String showAllSchedules(Model model) {
+        List<Schedule> schedules = scheduleService.getAllSchedules();
+        model.addAttribute("schedules", schedules);
+        return "teachers/allSchedules";
+    }
+
+    @GetMapping("/filterSchedule")
+    public String filterSchedule(@RequestParam("section") String section, Model model) {
+        List<Schedule> schedules = scheduleService.getSchedulesBySection(section);
+        model.addAttribute("schedules", schedules);
+        return "teachers/allSchedules";
     }
 
 }

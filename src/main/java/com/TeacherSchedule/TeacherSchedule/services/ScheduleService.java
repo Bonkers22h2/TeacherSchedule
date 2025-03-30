@@ -1,5 +1,8 @@
 package com.TeacherSchedule.TeacherSchedule.services;
 
+import com.TeacherSchedule.TeacherSchedule.models.Schedule;
+import com.TeacherSchedule.TeacherSchedule.services.ScheduleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +24,11 @@ public class ScheduleService {
     private List<Class> classes;
     private List<Integer> timeSlots;
     private Random random;
+
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
+    private List<String> currentSchedule = new ArrayList<>(); // Store the generated schedule
 
     public ScheduleService() {
         this.classes = new ArrayList<>();
@@ -77,9 +85,14 @@ public class ScheduleService {
         return false;
     }
 
-    public List<String> generateSchedule() {
+    public List<String> generateSchedule(String selectedSection) {
+        // Check if a schedule already exists for the selected section
+        if (!scheduleRepository.findBySection(selectedSection).isEmpty()) {
+            throw new IllegalStateException("A schedule already exists for " + selectedSection + ".");
+        }
+
         List<String> scheduleOutput = new ArrayList<>();
-        Set<String> scheduledClasses = new HashSet<>(); // Track scheduled classes
+        Set<Integer> scheduledClassIndices = new HashSet<>(); // Track scheduled class indices
 
         shuffleClasses();
         createTimeSlots();
@@ -98,16 +111,18 @@ public class ScheduleService {
                     int endMinute = (startMinute + CLASS_DURATION_MINUTES) % 60;
 
                     if (timeSlots.get(timeSlotIndex) != -1 && timeSlots.get(timeSlotIndex) != -2) {
-                        Class scheduledClass = classes.get(timeSlots.get(timeSlotIndex));
-                        String classEntry = scheduledClass.getName() + " (Section " + scheduledClass.getSection() + ")";
+                        int classIndex = timeSlots.get(timeSlotIndex);
+                        if (!scheduledClassIndices.contains(classIndex)) {
+                            Class scheduledClass = classes.get(classIndex);
+                            String classEntry = String.format("%02d:%02d - %02d:%02d - %s - Section %d",
+                                    i, startMinute, endHour, endMinute, scheduledClass.getName(), scheduledClass.getSection());
 
-                        // Only add non-duplicates
-                        if (!scheduledClasses.contains(classEntry)) {
-                            scheduleOutput.add(i + ":00 - " + endHour + ":00 - " + classEntry);
-                            scheduledClasses.add(classEntry);
+                            scheduleOutput.add(classEntry);
+                            scheduledClassIndices.add(classIndex); // Mark the class as scheduled
                         }
                     } else if (timeSlots.get(timeSlotIndex) == -2) {
-                        scheduleOutput.add(i + ":00 - " + endHour + ":00 - Break");
+                        scheduleOutput.add(String.format("%02d:%02d - %02d:%02d - Break - Unknown Section",
+                                i, startMinute, endHour, endMinute));
                     }
                 }
             }
@@ -115,7 +130,34 @@ public class ScheduleService {
             scheduleOutput.add("It is not possible to schedule all classes within the given time frame.");
         }
 
+        currentSchedule = scheduleOutput;
         return scheduleOutput;
+    }
+
+    public void saveSchedule(String selectedSection) {
+        if (currentSchedule.isEmpty()) {
+            throw new IllegalStateException("No schedule has been generated to save.");
+        }
+
+        for (String entry : currentSchedule) {
+            String[] parts = entry.split(" - ");
+            if (parts.length >= 3) {
+                // Save the schedule with the selected section
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection));
+            }
+        }
+    }
+
+    public List<String> getCurrentSchedule() {
+        return currentSchedule; // Provide access to the current schedule
+    }
+
+    public List<Schedule> getAllSchedules() {
+        return scheduleRepository.findAll();
+    }
+
+    public List<Schedule> getSchedulesBySection(String section) {
+        return scheduleRepository.findBySection(section);
     }
 
 }
