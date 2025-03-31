@@ -8,18 +8,29 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #00487C;">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-lg sticky-top" style="background-color: #00487C;">
+        <div class="container">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-nav w-100 d-flex justify-content-around">
-                    <a class="nav-link active text-center fw-bold" aria-current="page" href="#">Home</a>
-                    <a class="nav-link text-center fw-bold" href="#">Courses</a>
-                    <a class="nav-link text-center fw-bold" href="#">Teachers</a>
-                    <a class="nav-link text-center fw-bold" href="#">Attendance</a>
-                </div>
+                <ul class="navbar-nav w-100 d-flex justify-content-between align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link active text-center fw-bold px-3 py-2 text-white position-relative" aria-current="page" href="#" style="color: #fff;">
+                            Home
+                            <span class="position-absolute bottom-0 start-50 translate-middle-x" style="width: 50%; height: 3px; background-color: #0496FF;"></span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-center fw-bold px-3 py-2 text-white" href="#" style="color: #fff;">Courses</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-center fw-bold px-3 py-2 text-white" href="#" style="color: #fff;">Teachers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-center fw-bold px-3 py-2 text-white" href="#" style="color: #fff;">Attendance</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -29,22 +40,22 @@
             <div class="card-header">
                 <h2 class="mb-0 text-center">Teachers</h2>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped table-sm">
+                    <table class="table table-bordered table-hover table-striped">
                         <thead>
                             <tr>
-                                <th style="background-color: #3E6680; color: white;">ID</th>
-                                <th style="background-color: #3E6680; color: white;">Full Name</th>
-                                <th style="background-color: #3E6680; color: white;">Gender</th>
-                                <th style="background-color: #3E6680; color: white;">Birthdate</th>
-                                <th style="background-color: #3E6680; color: white;">Contact</th>
-                                <th style="background-color: #3E6680; color: white;">Email</th>
-                                <th style="background-color: #3E6680; color: white;">Subjects</th>
-                                <th style="background-color: #3E6680; color: white;">Grade Levels</th>
-                                <th style="background-color: #3E6680; color: white;">Experience</th>
-                                <th style="background-color: #3E6680; color: white;">Created At</th>
-                                <th style="background-color: #3E6680; color: white;">Actions</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">ID</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Full Name</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Gender</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Birthdate</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Contact</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Email</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Subjects</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Grade Levels</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Experience</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Created At</th>
+                                <th class="text-center" style="background-color: #3E6680; color: white;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,7 +78,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-3">
+                <div class="mt-4">
                     <a href="/teachers/add" class="btn btn-success">+ Add Teacher</a>
                     <a href="/teachers/schedule" class="btn btn-success">+ Generate Schedule</a>
                 </div>
