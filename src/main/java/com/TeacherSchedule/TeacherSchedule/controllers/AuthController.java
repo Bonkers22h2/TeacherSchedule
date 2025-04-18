@@ -24,7 +24,7 @@ public class AuthController {
                                 Model model) {
 
         if (email.equals(adminEmail) && password.equals(adminPassword)) {
-            session.setAttribute("adminLoggedIn", true);
+            session.setAttribute("role", "admin");
             return "redirect:/teachers";
         } else {
             model.addAttribute("error", "Invalid credentials");

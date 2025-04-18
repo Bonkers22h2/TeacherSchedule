@@ -1,6 +1,6 @@
 package com.TeacherSchedule.TeacherSchedule.controllers;
 
-import com.TeacherSchedule.TeacherSchedule.models.Schedule; // Add this import
+import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/teachers")
-public class TeacherController {
+public class AdminController {
 
     @Autowired
     private TeacherRepository repo;
@@ -24,30 +24,30 @@ public class TeacherController {
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
     public String showTeacherList(Model model, HttpSession session) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         List<Teacher> teachers = repo.findAll();
         model.addAttribute("teachers", teachers);
-        return "teachers/index";
+        return "admin/index";
     }
 
     // Show add form
     @GetMapping("/add")
     public String showAddForm(Model model, HttpSession session) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         model.addAttribute("teacher", new Teacher());
-        return "teachers/add";
+        return "admin/add";
     }
 
     // Handle form submission
     @PostMapping("/add")
     public String addTeacher(@ModelAttribute Teacher teacher, HttpSession session) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
@@ -58,7 +58,7 @@ public class TeacherController {
 
     @GetMapping("/edit")
     public String showEditForm(@RequestParam("id") int id, Model model, HttpSession session) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
@@ -68,12 +68,12 @@ public class TeacherController {
         }
 
         model.addAttribute("teacher", teacher);
-        return "teachers/edit";
+        return "admin/edit";
     }
 
     @PostMapping("/edit")
     public String updateTeacher(@ModelAttribute Teacher teacher, HttpSession session) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
@@ -83,7 +83,7 @@ public class TeacherController {
 
     @GetMapping("/delete")
     public String deleteTeacher(@RequestParam("id") int id, HttpSession session) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
@@ -93,12 +93,16 @@ public class TeacherController {
 
     private final ScheduleService scheduleService;
 
-    public TeacherController(ScheduleService scheduleService) {
+    public AdminController(ScheduleService scheduleService) {
         this.scheduleService = scheduleService;
     }
 
     @GetMapping("/schedule")
-    public String showSchedule(Model model) {
+    public String showSchedule(Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
         List<String> schedule = scheduleService.getCurrentSchedule();
 
         // Validate schedule format
@@ -110,43 +114,54 @@ public class TeacherController {
         }
 
         model.addAttribute("schedule", schedule);
-        return "teachers/schedule";
+        return "admin/schedule";
     }
 
     @PostMapping("/generateSchedule")
-    public String generateSchedule(@RequestParam("section") String section, Model model) {
+    public String generateSchedule(@RequestParam("section") String section, Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
         try {
             model.addAttribute("schedule", scheduleService.generateSchedule(section));
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
         model.addAttribute("selectedSection", section); // Pass the selected section to the model
-        return "teachers/schedule";
+        return "admin/schedule";
     }
 
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section, HttpSession session, Model model) {
-        if (session.getAttribute("adminLoggedIn") == null) {
+        if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         scheduleService.saveSchedule(section);
         model.addAttribute("selectedSection", section); // Pass the selected section to the model
-        return "redirect:/teachers/schedule";
+        return "redirect:/teachers/schedule"; // Corrected redirect path
     }
 
     @GetMapping("/allSchedules")
-    public String showAllSchedules(Model model) {
+    public String showAllSchedules(Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
         List<Schedule> schedules = scheduleService.getAllSchedules();
         model.addAttribute("schedules", schedules);
-        return "teachers/allSchedules";
+        return "admin/allSchedules";
     }
 
     @GetMapping("/filterSchedule")
-    public String filterSchedule(@RequestParam("section") String section, Model model) {
+    public String filterSchedule(@RequestParam("section") String section, Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
         List<Schedule> schedules = scheduleService.getSchedulesBySection(section);
         model.addAttribute("schedules", schedules);
-        return "teachers/allSchedules";
+        return "admin/allSchedules";
     }
-
 }
