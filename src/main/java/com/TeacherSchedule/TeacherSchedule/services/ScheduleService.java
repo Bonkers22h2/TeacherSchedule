@@ -1,9 +1,7 @@
 package com.TeacherSchedule.TeacherSchedule.services;
 
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
-import com.TeacherSchedule.TeacherSchedule.services.ScheduleRepository;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
-import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -66,8 +64,6 @@ public class ScheduleService {
         if (classIndex == classes.size()) {
             return true;
         }
-
-        Class currentClass = classes.get(classIndex);
 
         for (int i = 0; i < timeSlots.size(); i++) {
             if (timeSlots.get(i) == -1) {
@@ -172,6 +168,11 @@ public class ScheduleService {
         }
 
         for (Schedule schedule : schedules) {
+            // Skip schedules that already have an assigned teacher
+            if (schedule.getTeacher() != null) {
+                continue;
+            }
+
             List<Teacher> teachers = teacherRepository.findBySubjectsContaining(schedule.getSubject());
             boolean teacherAssigned = false;
 
