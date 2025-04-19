@@ -57,7 +57,15 @@
             <div class="row mb-3">
                 <div class="col">
                     <label>Subjects</label>
-                    <input type="text" th:field="*{subjects}" class="form-control">
+                    <select th:field="*{subjects}" class="form-control">
+                        <option value="Math">Math</option>
+                        <option value="Filipino">Filipino</option>
+                        <option value="AP">AP</option>
+                        <option value="Science">Science</option>
+                        <option value="TLE">TLE</option>
+                        <option value="English">English</option>
+                        <option value="MAPEH">MAPEH</option>
+                    </select>
                 </div>
                 <div class="col">
                     <label>Grade Level</label>

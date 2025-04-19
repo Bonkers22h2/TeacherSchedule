@@ -34,6 +34,10 @@
             background-color: #007bff;
             border: none;
         }
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+        }
         table {
             background-color: #fff;
             border-radius: 8px;
@@ -63,20 +67,42 @@
 <body>
     <div class="container mt-5">
         <h1 class="mb-4 text-center">All Schedules</h1>
+
+        <!-- Display success or error messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <a href="/teachers" class="btn btn-success mb-3">Back</a>
 
-        <!-- Section Filter -->
-        <form action="/teachers/filterSchedule" method="GET" class="mb-4">
+        <!-- Single Dropdown for Section -->
+        <form id="sectionForm" class="mb-4">
             <div class="mb-3">
                 <label for="section" class="form-label">Select Section</label>
                 <select name="section" id="section" class="form-select" required>
-                    <option value="Section 1">Section 1</option>
-                    <option value="Section 2">Section 2</option>
-                    <option value="Section 3">Section 3</option>
+                    <option value="Section 1" th:selected="${section == 'Section 1'}">Section 1</option>
+                    <option value="Section 2" th:selected="${section == 'Section 2'}">Section 2</option>
+                    <option value="Section 3" th:selected="${section == 'Section 3'}">Section 3</option>
                     <!-- Add more sections as needed -->
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary mb-3 w-100">Show Schedule</button>
+        </form>
+
+        <!-- Filter Schedule Button -->
+        <form id="filterForm" action="/teachers/filterSchedule" method="GET" class="mb-4">
+            <input type="hidden" name="section" id="filterSection" th:value="${section}">
+            <button type="button" class="btn btn-primary mb-3 w-100" onclick="submitFilterForm()">Show Schedule</button>
+        </form>
+
+        <!-- Auto-Assign Teacher Button -->
+        <form id="assignForm" action="/teachers/autoAssignTeacher" method="POST" class="mb-4">
+            <input type="hidden" name="section" id="assignSection" th:value="${section}">
+            <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
         </form>
 
         <!-- Schedule Table -->
@@ -84,19 +110,60 @@
             <thead>
                 <tr>
                     <th>Time Slot</th>
-                    <th>Class</th>
+                    <th>Subject</th>
                     <th>Section</th>
+                    <th>Assigned Teacher</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- Display All Schedules -->
                 <tr th:each="schedule : ${schedules}">
                     <td th:text="${schedule.timeSlot}"></td>
-                    <td th:text="${schedule.className}"></td>
+                    <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.section}"></td>
+                    <td th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}"></td>
                 </tr>
             </tbody>
         </table>
+
+        <script>
+            // Synchronize the dropdown value with the hidden inputs for both forms
+            document.getElementById('section').addEventListener('change', function () {
+                document.getElementById('filterSection').value = this.value;
+                document.getElementById('assignSection').value = this.value;
+            });
+
+            // Initialize the hidden inputs with the current dropdown value
+            document.getElementById('filterSection').value = document.getElementById('section').value;
+            document.getElementById('assignSection').value = document.getElementById('section').value;
+
+            // Submit the filter form and reload the page
+            function submitFilterForm() {
+                document.getElementById('filterForm').submit();
+            }
+
+            // Submit the assign form and show an alert box
+            async function submitAssignForm() {
+                const form = document.getElementById('assignForm');
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: form.method,
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        alert("Teachers successfully assigned!");
+                    } else {
+                        const errorMessage = await response.text();
+                        alert("Error: " + errorMessage);
+                    }
+                } catch (error) {
+                    alert("An unexpected error occurred: " + error.message);
+                }
+            }
+        </script>
     </div>
 </body>
 

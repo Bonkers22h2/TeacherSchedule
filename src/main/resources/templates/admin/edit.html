@@ -35,7 +35,12 @@
 
     <div class="mb-3">
         <label>Birthdate</label>
-        <input type="date" th:field="*{birthDate}" class="form-control"/>
+        <input type="date" id="birthDate" name="birthDate" class="form-control" th:value="${teacher.birthDate}" required/>
+    </div>
+
+    <div class="mb-3">
+        <label>Created At</label>
+        <input type="date" id="createdAt" name="createdAt" class="form-control" th:value="${teacher.createdAt}" readonly/>
     </div>
 
     <div class="mb-3">
@@ -55,7 +60,15 @@
 
     <div class="mb-3">
         <label>Subjects</label>
-        <input type="text" th:field="*{subjects}" class="form-control"/>
+        <select th:field="*{subjects}" class="form-control">
+            <option value="Math">Math</option>
+            <option value="Filipino">Filipino</option>
+            <option value="AP">AP</option>
+            <option value="Science">Science</option>
+            <option value="TLE">TLE</option>
+            <option value="English">English</option>
+            <option value="MAPEH">MAPEH</option>
+        </select>
     </div>
 
     <div class="mb-3">

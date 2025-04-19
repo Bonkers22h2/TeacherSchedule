@@ -2,6 +2,8 @@ package com.TeacherSchedule.TeacherSchedule.services;
 
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleRepository;
+import com.TeacherSchedule.TeacherSchedule.models.Teacher;
+import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -28,6 +30,9 @@ public class ScheduleService {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
+    @Autowired
+    private TeacherRepository teacherRepository; // Add TeacherRepository to fetch teacher data
+
     private List<String> currentSchedule = new ArrayList<>(); // Store the generated schedule
 
     public ScheduleService() {
@@ -35,15 +40,15 @@ public class ScheduleService {
         this.timeSlots = new ArrayList<>();
         this.random = new Random();
 
-        // Sample classes for demo
+        // Updated list of subjects for demo
         classes.add(new Class("Math", 1, 1));
-        classes.add(new Class("Science", 2, 1));
-        classes.add(new Class("English", 3, 1));
-        classes.add(new Class("Filipino", 4, 1));
-        classes.add(new Class("Homeroom", 5, 1));
-        classes.add(new Class("ESP", 6, 1));
-        classes.add(new Class("TLE", 7, 1));
-        classes.add(new Class("AP", 8, 1));
+        classes.add(new Class("Filipino", 2, 1));
+        classes.add(new Class("AP", 3, 1));
+        classes.add(new Class("Science", 4, 1));
+        classes.add(new Class("TLE", 5, 1));
+        classes.add(new Class("English", 6, 1));
+        classes.add(new Class("MAPEH", 7, 1));
+        classes.add(new Class("Homeroom", 8, 1)); // Added Homeroom subject
     }
 
     private void shuffleClasses() {
@@ -160,6 +165,33 @@ public class ScheduleService {
         return scheduleRepository.findBySection(section);
     }
 
+    public void autoAssignTeachers(String section) {
+        List<Schedule> schedules = scheduleRepository.findBySection(section);
+        if (schedules.isEmpty()) {
+            throw new IllegalStateException("No schedules found for section " + section + ".");
+        }
+
+        for (Schedule schedule : schedules) {
+            List<Teacher> teachers = teacherRepository.findBySubjectsContaining(schedule.getSubject());
+            boolean teacherAssigned = false;
+
+            for (Teacher teacher : teachers) {
+                // Check if the teacher is already assigned to a schedule at the same time slot
+                boolean conflict = scheduleRepository.existsByTimeSlotAndTeacher(schedule.getTimeSlot(), teacher);
+                if (!conflict) {
+                    schedule.setTeacher(teacher); // Assign the teacher if no conflict
+                    teacherAssigned = true;
+                    break;
+                }
+            }
+
+            if (!teacherAssigned) {
+                schedule.setTeacher(null); // Leave the teacher field blank if no suitable teacher is available
+            }
+
+            scheduleRepository.save(schedule);
+        }
+    }
 }
 
 class Class {

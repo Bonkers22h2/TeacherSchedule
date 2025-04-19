@@ -11,19 +11,23 @@ public class Schedule {
     private Long id;
 
     private String timeSlot;
-    private String className;
+    private String subject; // Renamed from className to subject
     private String section; // Column for the section
+
+    @ManyToOne
+    @JoinColumn(name = "teacher_id") // Ensure this maps to the correct column in the database
+    private Teacher teacher;
 
     public Schedule() {}
 
-    public Schedule(String timeSlot, String className) {
+    public Schedule(String timeSlot, String subject) { // Updated parameter name
         this.timeSlot = timeSlot;
-        this.className = className;
+        this.subject = subject;
     }
 
-    public Schedule(String timeSlot, String className, String section) {
+    public Schedule(String timeSlot, String subject, String section) { // Updated parameter name
         this.timeSlot = timeSlot;
-        this.className = className;
+        this.subject = subject;
         this.section = section;
     }
 
@@ -39,12 +43,12 @@ public class Schedule {
         this.timeSlot = timeSlot;
     }
 
-    public String getClassName() {
-        return className;
+    public String getSubject() { // Updated getter name
+        return subject;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setSubject(String subject) { // Updated setter name
+        this.subject = subject;
     }
 
     public String getSection() {
@@ -53,5 +57,13 @@ public class Schedule {
 
     public void setSection(String section) {
         this.section = section;
+    }
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
     }
 }

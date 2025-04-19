@@ -98,16 +98,15 @@
             <thead>
                 <tr>
                     <th>Time Slot</th>
-                    <th>Class</th>
-                    <th>Section</th> <!-- Add Section Column -->
+                    <th>Subject</th> <!-- Added Subject column -->
+                    <th>Section</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- Display Schedule -->
                 <tr th:each="entry : ${schedule}">
                     <td th:text="${#strings.arraySplit(entry, ' - ')[0]}"></td> <!-- Time Slot Start -->
-                    <td th:text="${#strings.arraySplit(entry, ' - ')[1]}"></td> <!-- Time Slot End -->
-                    <td th:text="${#strings.arraySplit(entry, ' - ')[2]}"></td> <!-- Class Name -->
+                    <td th:text="${#strings.arraySplit(entry, ' - ')[2]}"></td> <!-- Subject -->
                     <td th:text="${#strings.arraySplit(entry, ' - ').length > 3 ? #strings.arraySplit(entry, ' - ')[3] : 'Unknown Section'}"></td> <!-- Section -->
                 </tr>
             </tbody>
