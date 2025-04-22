@@ -74,7 +74,7 @@
                                 <td th:text="${teacher.createdAt}"></td>
                                 <td style="white-space: nowrap">
                                     <a th:href="@{/teachers/edit(id=${teacher.id})}" class="btn btn-primary btn-sm">Edit</a>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteTeacher(${teacher.id})">Delete</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteTeacher(' + ${teacher.id} + ')">Delete</button>
                                 </td>
                             </tr>
                         </tbody>

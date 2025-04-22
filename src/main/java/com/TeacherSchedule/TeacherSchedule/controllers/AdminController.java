@@ -171,7 +171,6 @@ public class AdminController {
         model.addAttribute("schedules", schedules);
         return "admin/allSchedules";
     }
-<<<<<<< Updated upstream
 
     @GetMapping("/profile")
     public String showProfile(HttpSession session) {
@@ -180,7 +179,6 @@ public class AdminController {
         }
         return "admin/profile"; // Path to the profile.html file
     }
-=======
     @GetMapping("/attendance")
     public String showAttendance(HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
@@ -189,5 +187,4 @@ public class AdminController {
         return "admin/attendance";
     }
     
->>>>>>> Stashed changes
 }
