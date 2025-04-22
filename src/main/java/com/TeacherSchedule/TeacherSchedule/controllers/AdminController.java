@@ -87,6 +87,10 @@ public class AdminController {
             return "redirect:/signin";
         }
 
+        if (!repo.existsById(id)) {
+            throw new IllegalArgumentException("Teacher not found");
+        }
+
         repo.deleteById(id);
         return "redirect:/teachers";
     }
@@ -163,5 +167,13 @@ public class AdminController {
         List<Schedule> schedules = scheduleService.getSchedulesBySection(section);
         model.addAttribute("schedules", schedules);
         return "admin/allSchedules";
+    }
+
+    @GetMapping("/profile")
+    public String showProfile(HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+        return "admin/profile"; // Path to the profile.html file
     }
 }
