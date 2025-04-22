@@ -16,7 +16,6 @@ import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 @Controller
 @RequestMapping("/teachers")
 public class AdminController {
@@ -171,6 +170,19 @@ public class AdminController {
         model.addAttribute("schedules", schedules);
         return "admin/allSchedules";
     }
+
+    @GetMapping("/profile")
+    public String showProfile(HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+        return "admin/profile";
+    }
+
+    public String getMethodName(@RequestParam String param) {
+        return new String();
+    }
+
     @GetMapping("/attendance")
     public String showAttendance(HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
@@ -178,5 +190,5 @@ public class AdminController {
         }
         return "admin/attendance";
     }
-    
+
 }
