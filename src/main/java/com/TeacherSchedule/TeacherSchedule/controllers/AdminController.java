@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @Controller
 @RequestMapping("/teachers")
@@ -168,6 +171,7 @@ public class AdminController {
         model.addAttribute("schedules", schedules);
         return "admin/allSchedules";
     }
+<<<<<<< Updated upstream
 
     @GetMapping("/profile")
     public String showProfile(HttpSession session) {
@@ -176,4 +180,14 @@ public class AdminController {
         }
         return "admin/profile"; // Path to the profile.html file
     }
+=======
+    @GetMapping("/attendance")
+    public String showAttendance(HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+        return "admin/attendance";
+    }
+    
+>>>>>>> Stashed changes
 }
