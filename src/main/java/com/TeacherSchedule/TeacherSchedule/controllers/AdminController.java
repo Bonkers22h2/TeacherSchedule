@@ -171,20 +171,4 @@ public class AdminController {
         model.addAttribute("schedules", schedules);
         return "admin/allSchedules";
     }
-
-    @GetMapping("/profile")
-    public String showProfile(HttpSession session) {
-        if (!"admin".equals(session.getAttribute("role"))) {
-            return "redirect:/signin";
-        }
-        return "admin/profile"; // Path to the profile.html file
-    }
-    @GetMapping("/attendance")
-    public String showAttendance(HttpSession session) {
-        if (!"admin".equals(session.getAttribute("role"))) {
-            return "redirect:/signin";
-        }
-        return "admin/attendance";
-    }
-    
 }
