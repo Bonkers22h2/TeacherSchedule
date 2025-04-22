@@ -171,4 +171,12 @@ public class AdminController {
         model.addAttribute("schedules", schedules);
         return "admin/allSchedules";
     }
+    @GetMapping("/attendance")
+    public String showAttendance(HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+        return "admin/attendance";
+    }
+    
 }
