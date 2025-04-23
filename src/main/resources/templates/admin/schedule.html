@@ -72,10 +72,9 @@
             <div class="col-md-6">
                 <label for="section" class="form-label">Select Section</label>
                 <select name="section" id="section" class="form-select" form="generateForm" required>
-                    <option value="Section 1" th:selected="${selectedSection == 'Section 1'}">Section 1</option>
-                    <option value="Section 2" th:selected="${selectedSection == 'Section 2'}">Section 2</option>
-                    <option value="Section 3" th:selected="${selectedSection == 'Section 3'}">Section 3</option>
-                    <!-- Add more sections as needed -->
+                    <option th:each="section : ${sections}" th:value="${section.name}" 
+                            th:text="${section.name}" th:selected="${selectedSection == section.name}">
+                    </option>
                 </select>
             </div>
 
@@ -83,9 +82,9 @@
             <div class="col-md-6">
                 <label for="schoolYear" class="form-label">Select School Year</label>
                 <select name="schoolYear" id="schoolYear" class="form-select" form="generateForm" required>
-                    <option value="2023-2024" th:selected="${selectedSchoolYear == '2023-2024'}">2023-2024</option>
-                    <option value="2024-2025" th:selected="${selectedSchoolYear == '2024-2025'}">2024-2025</option>
-                    <!-- Add more school years as needed -->
+                    <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
+                            th:text="${schoolYear.year}" th:selected="${selectedSchoolYear == schoolYear.year}">
+                    </option>
                 </select>
             </div>
         </div>
@@ -93,7 +92,9 @@
         <div class="row mb-4">
             <!-- Generate Schedule Button -->
             <div class="col-md-6">
-                <form id="generateForm" action="/teachers/generateSchedule" method="POST">
+                <form id="generateForm" action="/teachers/schedule/generate" method="POST">
+                    <input type="hidden" name="section" id="generateSection" value="" />
+                    <input type="hidden" name="schoolYear" id="generateSchoolYear" value="" />
                     <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
                 </form>
             </div>
@@ -101,8 +102,8 @@
             <!-- Save Schedule Button -->
             <div class="col-md-6">
                 <form id="saveForm" action="/teachers/saveSchedule" method="POST">
-                    <input type="hidden" name="section" id="saveSection" value="">
-                    <input type="hidden" name="schoolYear" id="saveSchoolYear" value="">
+                    <input type="hidden" name="section" id="saveSection" value="" />
+                    <input type="hidden" name="schoolYear" id="saveSchoolYear" value="" />
                     <button type="submit" class="btn btn-secondary w-100">Save Schedule</button>
                 </form>
             </div>
@@ -136,17 +137,21 @@
     </div>
 
     <script>
-        // Synchronize the dropdown values with the hidden inputs for the save form
+        // Synchronize the dropdown values with the hidden inputs for the generate and save forms
         document.getElementById('section').addEventListener('change', function () {
+            document.getElementById('generateSection').value = this.value;
             document.getElementById('saveSection').value = this.value;
         });
 
         document.getElementById('schoolYear').addEventListener('change', function () {
+            document.getElementById('generateSchoolYear').value = this.value;
             document.getElementById('saveSchoolYear').value = this.value;
         });
 
         // Initialize the hidden inputs with the current dropdown values
+        document.getElementById('generateSection').value = document.getElementById('section').value;
         document.getElementById('saveSection').value = document.getElementById('section').value;
+        document.getElementById('generateSchoolYear').value = document.getElementById('schoolYear').value;
         document.getElementById('saveSchoolYear').value = document.getElementById('schoolYear').value;
     </script>
 </body>

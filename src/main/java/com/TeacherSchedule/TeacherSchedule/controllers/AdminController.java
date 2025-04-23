@@ -4,6 +4,8 @@ import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,6 +24,12 @@ public class AdminController {
 
     @Autowired
     private TeacherRepository repo;
+
+    @Autowired
+    private SectionRepository sectionRepository;
+
+    @Autowired
+    private SchoolYearRepository schoolYearRepository;
 
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
@@ -120,6 +128,8 @@ public class AdminController {
         }
 
         model.addAttribute("schedule", schedule);
+        model.addAttribute("sections", sectionRepository.findAll()); // Fetch sections from the database
+        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Fetch school years from the database
         return "admin/schedule";
     }
 
@@ -136,6 +146,8 @@ public class AdminController {
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
+        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
+        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
         model.addAttribute("selectedSection", section); // Pass the selected section to the model
         model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
         return "admin/schedule";
@@ -149,10 +161,16 @@ public class AdminController {
             return "redirect:/signin";
         }
 
-        scheduleService.saveSchedule(section, schoolYear);
-        model.addAttribute("selectedSection", section);
+        try {
+            scheduleService.saveSchedule(section, schoolYear);
+        } catch (IllegalStateException e) {
+            model.addAttribute("error", e.getMessage());
+        }
+        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
+        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
+        model.addAttribute("selectedSection", section); // Pass the selected section to the model
         model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
-        return "redirect:/teachers/schedule";
+        return "admin/schedule";
     }
 
     @GetMapping("/allSchedules")
@@ -163,6 +181,8 @@ public class AdminController {
 
         List<Schedule> schedules = scheduleService.getAllSchedules();
         model.addAttribute("schedules", schedules);
+        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
+        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
         return "admin/allSchedules";
     }
 
@@ -177,8 +197,10 @@ public class AdminController {
         // Filter schedules by section and school year
         List<Schedule> schedules = scheduleService.getSchedulesBySectionAndSchoolYear(section, schoolYear);
         model.addAttribute("schedules", schedules);
-        model.addAttribute("section", section); // Pass the selected section to the model
-        model.addAttribute("schoolYear", schoolYear); // Pass the selected school year to the model
+        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
+        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
+        model.addAttribute("selectedSection", section); // Pass the selected section to the model
+        model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
         return "admin/allSchedules";
     }
 

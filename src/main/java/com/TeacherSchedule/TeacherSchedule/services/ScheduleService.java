@@ -86,14 +86,14 @@ public class ScheduleService {
         return false; // No valid schedule found
     }
 
-    public List<String> generateSchedule(String selectedSection, String selectedSchoolYear) {
-        // Check if a schedule already exists for the selected section and school year
-        if (!scheduleRepository.findBySectionAndSchoolYear(selectedSection, selectedSchoolYear).isEmpty()) {
-            throw new IllegalStateException("A schedule already exists for " + selectedSection + " in the school year " + selectedSchoolYear + ".");
+    public List<String> generateSchedule(String section, String schoolYear) {
+        // Check if a schedule already exists for the given section and school year
+        if (scheduleRepository.findBySectionAndSchoolYear(section, schoolYear).size() > 0) {
+            throw new IllegalStateException("A schedule already exists for section '" + section + "' in the school year '" + schoolYear + "'.");
         }
 
         List<String> scheduleOutput = new ArrayList<>();
-        Set<String> scheduledSubjects = new HashSet<>(); // Track scheduled subjects
+        Set<String> scheduledSubjects = new HashSet<>();
         shuffleClasses();
         createTimeSlots();
 
@@ -114,7 +114,6 @@ public class ScheduleService {
                         int classIndex = timeSlots.get(timeSlotIndex);
                         Class scheduledClass = classes.get(classIndex);
 
-                        // Skip if the subject is already scheduled
                         if (scheduledSubjects.contains(scheduledClass.getName())) {
                             continue;
                         }
@@ -122,7 +121,7 @@ public class ScheduleService {
                         String classEntry = String.format("%02d:%02d - %02d:%02d - %s - Section %d",
                                 i, startMinute, endHour, endMinute, scheduledClass.getName(), scheduledClass.getSection());
                         scheduleOutput.add(classEntry);
-                        scheduledSubjects.add(scheduledClass.getName()); // Mark the subject as scheduled
+                        scheduledSubjects.add(scheduledClass.getName());
                     } else if (timeSlots.get(timeSlotIndex) == -2) {
                         scheduleOutput.add(String.format("%02d:%02d - %02d:%02d - Break - Unknown Section",
                                 i, startMinute, endHour, endMinute));

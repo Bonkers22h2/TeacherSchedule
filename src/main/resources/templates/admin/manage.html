@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Sections, School Years, and Rooms</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <a href="/teachers" class="btn btn-secondary mb-4">Back</a> <!-- Back Button -->
+        <h2 class="text-center mb-4">Manage Sections, School Years, and Rooms</h2>
+
+        <!-- Section Form -->
+        <form action="/teachers/manage/saveSection" method="post" class="mb-4">
+            <div class="mb-3">
+                <label for="section" class="form-label">Section</label>
+                <input type="text" id="section" name="section" class="form-control" placeholder="Enter section name" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Section</button>
+        </form>
+
+        <!-- School Year Form -->
+        <form action="/teachers/manage/saveSchoolYear" method="post" class="mb-4">
+            <div class="mb-3">
+                <label for="schoolYear" class="form-label">School Year</label>
+                <input type="text" id="schoolYear" name="schoolYear" class="form-control" placeholder="Enter school year (e.g., 2023-2024)" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save School Year</button>
+        </form>
+
+        <!-- Room Form -->
+        <form action="/teachers/manage/saveRoom" method="post" class="mb-4">
+            <div class="mb-3">
+                <label for="room" class="form-label">Room</label>
+                <input type="text" id="room" name="room" class="form-control" placeholder="Enter room name or number" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Room</button>
+        </form>
+    </div>
+</body>
+</html>
