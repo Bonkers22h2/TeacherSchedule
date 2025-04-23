@@ -67,27 +67,46 @@
         <a href="/teachers" class="btn btn-success mb-3">Back</a>
         <a href="/teachers/allSchedules" class="btn btn-primary mb-3">View All Schedules</a>
 
-        <!-- Dropdown for Section -->
-        <div class="mb-3">
-            <label for="section" class="form-label">Select Section</label>
-            <select name="section" id="section" class="form-select" form="generateForm" required>
-                <option value="Section 1" th:selected="${selectedSection == 'Section 1'}">Section 1</option>
-                <option value="Section 2" th:selected="${selectedSection == 'Section 2'}">Section 2</option>
-                <option value="Section 3" th:selected="${selectedSection == 'Section 3'}">Section 3</option>
-                <!-- Add more sections as needed -->
-            </select>
+        <div class="row mb-3">
+            <!-- Dropdown for Section -->
+            <div class="col-md-6">
+                <label for="section" class="form-label">Select Section</label>
+                <select name="section" id="section" class="form-select" form="generateForm" required>
+                    <option value="Section 1" th:selected="${selectedSection == 'Section 1'}">Section 1</option>
+                    <option value="Section 2" th:selected="${selectedSection == 'Section 2'}">Section 2</option>
+                    <option value="Section 3" th:selected="${selectedSection == 'Section 3'}">Section 3</option>
+                    <!-- Add more sections as needed -->
+                </select>
+            </div>
+
+            <!-- Dropdown for School Year -->
+            <div class="col-md-6">
+                <label for="schoolYear" class="form-label">Select School Year</label>
+                <select name="schoolYear" id="schoolYear" class="form-select" form="generateForm" required>
+                    <option value="2023-2024" th:selected="${selectedSchoolYear == '2023-2024'}">2023-2024</option>
+                    <option value="2024-2025" th:selected="${selectedSchoolYear == '2024-2025'}">2024-2025</option>
+                    <!-- Add more school years as needed -->
+                </select>
+            </div>
         </div>
 
-        <!-- Generate Schedule Form -->
-        <form id="generateForm" action="/teachers/generateSchedule" method="POST" class="mb-4">
-            <button type="submit" class="btn btn-primary mb-3 w-100">Generate Schedule</button>
-        </form>
+        <div class="row mb-4">
+            <!-- Generate Schedule Button -->
+            <div class="col-md-6">
+                <form id="generateForm" action="/teachers/generateSchedule" method="POST">
+                    <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
+                </form>
+            </div>
 
-        <!-- Save Schedule Form -->
-        <form id="saveForm" action="/teachers/saveSchedule" method="POST" class="mb-4">
-            <input type="hidden" name="section" id="saveSection" value="">
-            <button type="submit" class="btn btn-secondary mb-3 w-100">Save Schedule</button>
-        </form>
+            <!-- Save Schedule Button -->
+            <div class="col-md-6">
+                <form id="saveForm" action="/teachers/saveSchedule" method="POST">
+                    <input type="hidden" name="section" id="saveSection" value="">
+                    <input type="hidden" name="schoolYear" id="saveSchoolYear" value="">
+                    <button type="submit" class="btn btn-secondary w-100">Save Schedule</button>
+                </form>
+            </div>
+        </div>
 
         <!-- Display Error Message -->
         <div th:if="${error}" class="alert alert-danger" role="alert">
@@ -99,8 +118,9 @@
             <thead>
                 <tr>
                     <th>Time Slot</th>
-                    <th>Subject</th> <!-- Added Subject column -->
+                    <th>Subject</th>
                     <th>Section</th>
+                    <th>School Year</th> <!-- Added School Year column -->
                 </tr>
             </thead>
             <tbody>
@@ -109,19 +129,25 @@
                     <td th:text="${#strings.arraySplit(entry, ' - ')[0]}"></td> <!-- Time Slot Start -->
                     <td th:text="${#strings.arraySplit(entry, ' - ')[2]}"></td> <!-- Subject -->
                     <td th:text="${#strings.arraySplit(entry, ' - ').length > 3 ? #strings.arraySplit(entry, ' - ')[3] : 'Unknown Section'}"></td> <!-- Section -->
+                    <td th:text="${selectedSchoolYear}"></td> <!-- Display School Year -->
                 </tr>
             </tbody>
         </table>
     </div>
 
     <script>
-        // Synchronize the dropdown value with the hidden input for the save form
+        // Synchronize the dropdown values with the hidden inputs for the save form
         document.getElementById('section').addEventListener('change', function () {
             document.getElementById('saveSection').value = this.value;
         });
 
-        // Initialize the hidden input with the current dropdown value
+        document.getElementById('schoolYear').addEventListener('change', function () {
+            document.getElementById('saveSchoolYear').value = this.value;
+        });
+
+        // Initialize the hidden inputs with the current dropdown values
         document.getElementById('saveSection').value = document.getElementById('section').value;
+        document.getElementById('saveSchoolYear').value = document.getElementById('schoolYear').value;
     </script>
 </body>
 

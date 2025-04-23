@@ -124,29 +124,35 @@ public class AdminController {
     }
 
     @PostMapping("/generateSchedule")
-    public String generateSchedule(@RequestParam("section") String section, Model model, HttpSession session) {
+    public String generateSchedule(@RequestParam("section") String section,
+                                   @RequestParam("schoolYear") String schoolYear,
+                                   Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         try {
-            model.addAttribute("schedule", scheduleService.generateSchedule(section));
+            model.addAttribute("schedule", scheduleService.generateSchedule(section, schoolYear));
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
         model.addAttribute("selectedSection", section); // Pass the selected section to the model
+        model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
         return "admin/schedule";
     }
 
     @PostMapping("/saveSchedule")
-    public String saveSchedule(@RequestParam("section") String section, HttpSession session, Model model) {
+    public String saveSchedule(@RequestParam("section") String section,
+                               @RequestParam("schoolYear") String schoolYear,
+                               HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
-        scheduleService.saveSchedule(section);
-        model.addAttribute("selectedSection", section); // Pass the selected section to the model
-        return "redirect:/teachers/schedule"; // Corrected redirect path
+        scheduleService.saveSchedule(section, schoolYear);
+        model.addAttribute("selectedSection", section);
+        model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
+        return "redirect:/teachers/schedule";
     }
 
     @GetMapping("/allSchedules")
@@ -161,13 +167,18 @@ public class AdminController {
     }
 
     @GetMapping("/filterSchedule")
-    public String filterSchedule(@RequestParam("section") String section, Model model, HttpSession session) {
+    public String filterSchedule(@RequestParam("section") String section,
+                                  @RequestParam("schoolYear") String schoolYear,
+                                  Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
-        List<Schedule> schedules = scheduleService.getSchedulesBySection(section);
+        // Filter schedules by section and school year
+        List<Schedule> schedules = scheduleService.getSchedulesBySectionAndSchoolYear(section, schoolYear);
         model.addAttribute("schedules", schedules);
+        model.addAttribute("section", section); // Pass the selected section to the model
+        model.addAttribute("schoolYear", schoolYear); // Pass the selected school year to the model
         return "admin/allSchedules";
     }
 

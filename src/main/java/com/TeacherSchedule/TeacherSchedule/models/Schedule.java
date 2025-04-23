@@ -13,6 +13,7 @@ public class Schedule {
     private String timeSlot;
     private String subject; // Renamed from className to subject
     private String section; // Column for the section
+    private String schoolYear; // Added schoolYear field
 
     @ManyToOne
     @JoinColumn(name = "teacher_id") // Ensure this maps to the correct column in the database
@@ -29,6 +30,13 @@ public class Schedule {
         this.timeSlot = timeSlot;
         this.subject = subject;
         this.section = section;
+    }
+
+    public Schedule(String timeSlot, String subject, String section, String schoolYear) {
+        this.timeSlot = timeSlot;
+        this.subject = subject;
+        this.section = section;
+        this.schoolYear = schoolYear;
     }
 
     public Long getId() {
@@ -57,6 +65,14 @@ public class Schedule {
 
     public void setSection(String section) {
         this.section = section;
+    }
+
+    public String getSchoolYear() {
+        return schoolYear;
+    }
+
+    public void setSchoolYear(String schoolYear) {
+        this.schoolYear = schoolYear;
     }
 
     public Teacher getTeacher() {

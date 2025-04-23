@@ -11,6 +11,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     // Find schedules by section
     List<Schedule> findBySection(String section);
 
+    // Find schedules by section and school year
+    List<Schedule> findBySectionAndSchoolYear(String section, String schoolYear);
+
     // Check if a teacher is already assigned to a schedule at a specific time slot
     boolean existsByTimeSlotAndTeacher(String timeSlot, Teacher teacher);
 }

@@ -62,7 +62,7 @@ public class ScheduleService {
 
     private boolean backtrack(int classIndex, boolean breakScheduled) {
         if (classIndex == classes.size()) {
-            return true;
+            return true; // All classes have been scheduled
         }
 
         for (int i = 0; i < timeSlots.size(); i++) {
@@ -70,31 +70,30 @@ public class ScheduleService {
                 timeSlots.set(i, classIndex);
 
                 if (!breakScheduled && i == BREAK_SLOT) {
-                    timeSlots.set(i, -2);
-                    if (backtrack(classIndex + 1, true))
+                    timeSlots.set(i, -2); // Schedule a break
+                    if (backtrack(classIndex, true)) // Continue scheduling the same class after the break
                         return true;
                     timeSlots.set(i, -1);
                 }
 
-                if (backtrack(classIndex + 1, breakScheduled))
+                if (backtrack(classIndex + 1, breakScheduled)) // Move to the next class
                     return true;
 
-                timeSlots.set(i, -1);
+                timeSlots.set(i, -1); // Backtrack
             }
         }
 
-        return false;
+        return false; // No valid schedule found
     }
 
-    public List<String> generateSchedule(String selectedSection) {
-        // Check if a schedule already exists for the selected section
-        if (!scheduleRepository.findBySection(selectedSection).isEmpty()) {
-            throw new IllegalStateException("A schedule already exists for " + selectedSection + ".");
+    public List<String> generateSchedule(String selectedSection, String selectedSchoolYear) {
+        // Check if a schedule already exists for the selected section and school year
+        if (!scheduleRepository.findBySectionAndSchoolYear(selectedSection, selectedSchoolYear).isEmpty()) {
+            throw new IllegalStateException("A schedule already exists for " + selectedSection + " in the school year " + selectedSchoolYear + ".");
         }
 
         List<String> scheduleOutput = new ArrayList<>();
-        Set<Integer> scheduledClassIndices = new HashSet<>(); // Track scheduled class indices
-
+        Set<String> scheduledSubjects = new HashSet<>(); // Track scheduled subjects
         shuffleClasses();
         createTimeSlots();
 
@@ -113,14 +112,17 @@ public class ScheduleService {
 
                     if (timeSlots.get(timeSlotIndex) != -1 && timeSlots.get(timeSlotIndex) != -2) {
                         int classIndex = timeSlots.get(timeSlotIndex);
-                        if (!scheduledClassIndices.contains(classIndex)) {
-                            Class scheduledClass = classes.get(classIndex);
-                            String classEntry = String.format("%02d:%02d - %02d:%02d - %s - Section %d",
-                                    i, startMinute, endHour, endMinute, scheduledClass.getName(), scheduledClass.getSection());
+                        Class scheduledClass = classes.get(classIndex);
 
-                            scheduleOutput.add(classEntry);
-                            scheduledClassIndices.add(classIndex); // Mark the class as scheduled
+                        // Skip if the subject is already scheduled
+                        if (scheduledSubjects.contains(scheduledClass.getName())) {
+                            continue;
                         }
+
+                        String classEntry = String.format("%02d:%02d - %02d:%02d - %s - Section %d",
+                                i, startMinute, endHour, endMinute, scheduledClass.getName(), scheduledClass.getSection());
+                        scheduleOutput.add(classEntry);
+                        scheduledSubjects.add(scheduledClass.getName()); // Mark the subject as scheduled
                     } else if (timeSlots.get(timeSlotIndex) == -2) {
                         scheduleOutput.add(String.format("%02d:%02d - %02d:%02d - Break - Unknown Section",
                                 i, startMinute, endHour, endMinute));
@@ -135,7 +137,7 @@ public class ScheduleService {
         return scheduleOutput;
     }
 
-    public void saveSchedule(String selectedSection) {
+    public void saveSchedule(String selectedSection, String selectedSchoolYear) {
         if (currentSchedule.isEmpty()) {
             throw new IllegalStateException("No schedule has been generated to save.");
         }
@@ -143,8 +145,8 @@ public class ScheduleService {
         for (String entry : currentSchedule) {
             String[] parts = entry.split(" - ");
             if (parts.length >= 3) {
-                // Save the schedule with the selected section
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection));
+                // Save the schedule with the selected section and school year
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection, selectedSchoolYear));
             }
         }
     }
@@ -159,6 +161,10 @@ public class ScheduleService {
 
     public List<Schedule> getSchedulesBySection(String section) {
         return scheduleRepository.findBySection(section);
+    }
+
+    public List<Schedule> getSchedulesBySectionAndSchoolYear(String section, String schoolYear) {
+        return scheduleRepository.findBySectionAndSchoolYear(section, schoolYear);
     }
 
     public void autoAssignTeachers(String section) {

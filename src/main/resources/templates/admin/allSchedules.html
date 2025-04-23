@@ -61,6 +61,9 @@
         .table-striped tbody tr:hover {
             background-color: #f1f1f1;
         }
+        .text-danger {
+            color: red;
+        }
     </style>
 </head>
 
@@ -80,9 +83,10 @@
 
         <a href="/teachers/schedule" class="btn btn-success mb-3">Back</a>
 
-        <!-- Single Dropdown for Section -->
-        <form id="sectionForm" class="mb-4">
-            <div class="mb-3">
+        <!-- Dropdowns for Section and School Year -->
+        <div class="row mb-4">
+            <!-- Dropdown for Section -->
+            <div class="col-md-6">
                 <label for="section" class="form-label">Select Section</label>
                 <select name="section" id="section" class="form-select" required>
                     <option value="Section 1" th:selected="${section == 'Section 1'}">Section 1</option>
@@ -91,11 +95,22 @@
                     <!-- Add more sections as needed -->
                 </select>
             </div>
-        </form>
+
+            <!-- Dropdown for School Year -->
+            <div class="col-md-6">
+                <label for="schoolYear" class="form-label">Select School Year</label>
+                <select name="schoolYear" id="schoolYear" class="form-select" required>
+                    <option value="2023-2024" th:selected="${schoolYear == '2023-2024'}">2023-2024</option>
+                    <option value="2024-2025" th:selected="${schoolYear == '2024-2025'}">2024-2025</option>
+                    <!-- Add more school years as needed -->
+                </select>
+            </div>
+        </div>
 
         <!-- Filter Schedule Button -->
         <form id="filterForm" action="/teachers/filterSchedule" method="GET" class="mb-4">
             <input type="hidden" name="section" id="filterSection" th:value="${section}">
+            <input type="hidden" name="schoolYear" id="filterSchoolYear" th:value="${schoolYear}">
             <button type="button" class="btn btn-primary mb-3 w-100" onclick="submitFilterForm()">Show Schedule</button>
         </form>
 
@@ -112,6 +127,7 @@
                     <th>Time Slot</th>
                     <th>Subject</th>
                     <th>Section</th>
+                    <th>School Year</th> <!-- Added School Year column -->
                     <th>Assigned Teacher</th>
                 </tr>
             </thead>
@@ -121,23 +137,29 @@
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.section}"></td>
-                    <td th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}"></td>
+                    <td th:text="${schedule.schoolYear}"></td> <!-- Display School Year -->
+                    <td th:classappend="${schedule.teacher == null ? 'text-danger' : ''}" 
+                        th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}">
+                    </td>
                 </tr>
             </tbody>
         </table>
 
         <script>
-            // Synchronize the dropdown value with the hidden inputs for both forms
+            // Synchronize the dropdown values with the hidden inputs for the filter form
             document.getElementById('section').addEventListener('change', function () {
                 document.getElementById('filterSection').value = this.value;
-                document.getElementById('assignSection').value = this.value;
             });
 
-            // Initialize the hidden inputs with the current dropdown value
-            document.getElementById('filterSection').value = document.getElementById('section').value;
-            document.getElementById('assignSection').value = document.getElementById('section').value;
+            document.getElementById('schoolYear').addEventListener('change', function () {
+                document.getElementById('filterSchoolYear').value = this.value;
+            });
 
-            // Submit the filter form and reload the page
+            // Initialize the hidden inputs with the current dropdown values
+            document.getElementById('filterSection').value = document.getElementById('section').value;
+            document.getElementById('filterSchoolYear').value = document.getElementById('schoolYear').value;
+
+            // Submit the filter form
             function submitFilterForm() {
                 document.getElementById('filterForm').submit();
             }
