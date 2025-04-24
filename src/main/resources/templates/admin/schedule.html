@@ -69,7 +69,7 @@
 
         <div class="row mb-3">
             <!-- Dropdown for Section -->
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="section" class="form-label">Select Section</label>
                 <select name="section" id="section" class="form-select" form="generateForm" required>
                     <option th:each="section : ${sections}" th:value="${section.name}" 
@@ -79,11 +79,21 @@
             </div>
 
             <!-- Dropdown for School Year -->
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="schoolYear" class="form-label">Select School Year</label>
                 <select name="schoolYear" id="schoolYear" class="form-select" form="generateForm" required>
                     <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
                             th:text="${schoolYear.year}" th:selected="${selectedSchoolYear == schoolYear.year}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Dropdown for Rooms -->
+            <div class="col-md-4">
+                <label for="room" class="form-label">Select Room</label>
+                <select name="room" id="room" class="form-select" form="generateForm" required>
+                    <option th:each="room : ${rooms}" th:value="${room.name}" 
+                            th:text="${room.name}" th:selected="${selectedRoom == room.name}">
                     </option>
                 </select>
             </div>
@@ -95,6 +105,7 @@
                 <form id="generateForm" action="/teachers/schedule/generate" method="POST">
                     <input type="hidden" name="section" id="generateSection" value="" />
                     <input type="hidden" name="schoolYear" id="generateSchoolYear" value="" />
+                    <input type="hidden" name="room" id="generateRoom" value="" /> <!-- Added hidden input for room -->
                     <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
                 </form>
             </div>
@@ -104,6 +115,7 @@
                 <form id="saveForm" action="/teachers/saveSchedule" method="POST">
                     <input type="hidden" name="section" id="saveSection" value="" />
                     <input type="hidden" name="schoolYear" id="saveSchoolYear" value="" />
+                    <input type="hidden" name="room" id="saveRoom" value="" /> <!-- Added hidden input for room -->
                     <button type="submit" class="btn btn-secondary w-100">Save Schedule</button>
                 </form>
             </div>
@@ -148,11 +160,18 @@
             document.getElementById('saveSchoolYear').value = this.value;
         });
 
+        document.getElementById('room').addEventListener('change', function () { // Added event listener for room
+            document.getElementById('generateRoom').value = this.value;
+            document.getElementById('saveRoom').value = this.value;
+        });
+
         // Initialize the hidden inputs with the current dropdown values
         document.getElementById('generateSection').value = document.getElementById('section').value;
         document.getElementById('saveSection').value = document.getElementById('section').value;
         document.getElementById('generateSchoolYear').value = document.getElementById('schoolYear').value;
         document.getElementById('saveSchoolYear').value = document.getElementById('schoolYear').value;
+        document.getElementById('generateRoom').value = document.getElementById('room').value; // Initialize room
+        document.getElementById('saveRoom').value = document.getElementById('room').value; // Initialize room
     </script>
 </body>
 

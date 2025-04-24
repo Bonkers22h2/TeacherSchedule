@@ -14,6 +14,7 @@ public class Schedule {
     private String subject; // Renamed from className to subject
     private String section; // Column for the section
     private String schoolYear; // Added schoolYear field
+    private String room; // Added room field
 
     @ManyToOne
     @JoinColumn(name = "teacher_id") // Ensure this maps to the correct column in the database
@@ -37,6 +38,23 @@ public class Schedule {
         this.subject = subject;
         this.section = section;
         this.schoolYear = schoolYear;
+    }
+
+    public String getRoom() {
+        return room;
+    }
+
+    public void setRoom(String room) {
+        this.room = room;
+    }
+
+    // Update constructor to include room
+    public Schedule(String timeSlot, String subject, String section, String schoolYear, String room) {
+        this.timeSlot = timeSlot;
+        this.subject = subject;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.room = room;
     }
 
     public Long getId() {

@@ -11,24 +11,54 @@
     <div class="card shadow-lg" style="width: 400px; border-radius: 15px; border-color: #005943;">
         <div class="card-body p-5">
             <h1 class="card-title mb-4 text-center" style="color: #344D00; font-weight: bold;">Sign In</h1>
-            <form method="post" th:action="@{/signin}">
-                <!-- Email Field -->
-                <div class="mb-3">
-                    <input type="text" name="email" class="form-control p-3" placeholder="Username or Email" required>
+
+            <!-- Tabs for Admin and Teacher -->
+            <ul class="nav nav-tabs mb-4 justify-content-center nav-fill" id="signInTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab" aria-controls="admin" aria-selected="true" style="color: #344D00; font-weight: bold;">Admin</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="teacher-tab" data-bs-toggle="tab" data-bs-target="#teacher" type="button" role="tab" aria-controls="teacher" aria-selected="false" style="color: #344D00; font-weight: bold;">Teacher</button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="signInTabContent">
+                <!-- Admin Sign-In Form -->
+                <div class="tab-pane fade show active" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+                    <form method="post" th:action="@{/signin}">
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            <input type="text" name="email" class="form-control p-3" placeholder="Username or Email" required>
+                        </div>
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <input type="password" name="password" class="form-control p-3" placeholder="Password" required>
+                        </div>
+                        <!-- Error Message -->
+                        <div th:if="${error}" class="text-danger mb-3" th:text="${error}"></div>
+                        <!-- Sign In Button -->
+                        <div class="d-flex justify-content-center">
+                            <button class="btn w-100 p-3" type="submit" style="background-color: #237600; color: white; font-weight: bold;">Sign In</button>
+                        </div>
+                    </form>
                 </div>
-                <!-- Password Field -->
-                <div class="mb-4">
-                    <input type="password" name="password" class="form-control p-3" placeholder="Password" required>
+
+                <!-- Teacher Sign-In Form -->
+                <div class="tab-pane fade" id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
+                    <form method="post" th:action="@{/signin/teacher}">
+                        <!-- Teacher ID Field -->
+                        <div class="mb-4">
+                            <input type="text" name="teacherId" class="form-control p-3" placeholder="Teacher ID" required>
+                        </div>
+                        <!-- Error Message -->
+                        <div th:if="${error}" class="text-danger mb-3" th:text="${error}"></div>
+                        <!-- Sign In Button -->
+                        <div class="d-flex justify-content-center">
+                            <button class="btn w-100 p-3" type="submit" style="background-color: #237600; color: white; font-weight: bold;">Sign In</button>
+                        </div>
+                    </form>
                 </div>
-                <!-- Error Message -->
-                <div th:if="${error}" class="text-danger mb-3" th:text="${error}"></div>
-                <!-- Sign In Button -->
-                <div class="d-flex justify-content-center">
-                    <button class="btn w-100 p-3" type="submit" style="background-color: #237600; color: white; font-weight: bold;">Sign In</button>
-                </div>
-            </form>
-            <div class="text-center mt-3">
-                <p class="small">Don't have an account? <a href="#" style="color:#237600; font-weight: bold;">Sign up here</a>.</p>
             </div>
         </div>
     </div>

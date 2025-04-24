@@ -136,7 +136,7 @@ public class ScheduleService {
         return scheduleOutput;
     }
 
-    public void saveSchedule(String selectedSection, String selectedSchoolYear) {
+    public void saveSchedule(String selectedSection, String selectedSchoolYear, String selectedRoom) {
         if (currentSchedule.isEmpty()) {
             throw new IllegalStateException("No schedule has been generated to save.");
         }
@@ -144,8 +144,8 @@ public class ScheduleService {
         for (String entry : currentSchedule) {
             String[] parts = entry.split(" - ");
             if (parts.length >= 3) {
-                // Save the schedule with the selected section and school year
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection, selectedSchoolYear));
+                // Save the schedule with the selected section, school year, and room
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection, selectedSchoolYear, selectedRoom));
             }
         }
     }

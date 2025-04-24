@@ -126,6 +126,7 @@
                     <th>Time Slot</th>
                     <th>Subject</th>
                     <th>Section</th>
+                    <th>Room</th>
                     <th>School Year</th> <!-- Added School Year column -->
                     <th>Assigned Teacher</th>
                 </tr>
@@ -136,6 +137,7 @@
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.section}"></td>
+                    <td th:text="${schedule.room}"></td>
                     <td th:text="${schedule.schoolYear}"></td> <!-- Display School Year -->
                     <td th:classappend="${schedule.teacher == null ? 'text-danger' : ''}" 
                         th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}">

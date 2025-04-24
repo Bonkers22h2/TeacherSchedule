@@ -6,6 +6,7 @@ import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -31,10 +32,19 @@ public class AdminController {
     @Autowired
     private SchoolYearRepository schoolYearRepository;
 
+    @Autowired
+    private RoomRepository roomRepository;
+
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
     public String showTeacherList(Model model, HttpSession session) {
-        if (!"admin".equals(session.getAttribute("role"))) {
+        String role = (String) session.getAttribute("role");
+
+        if ("teacher".equals(role)) {
+            return "teacher/index"; // Redirect to teacher's index.html
+        }
+
+        if (!"admin".equals(role)) {
             return "redirect:/signin";
         }
 
@@ -130,6 +140,7 @@ public class AdminController {
         model.addAttribute("schedule", schedule);
         model.addAttribute("sections", sectionRepository.findAll()); // Fetch sections from the database
         model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Fetch school years from the database
+        model.addAttribute("rooms", roomRepository.findAll()); // Fetch rooms from the database
         return "admin/schedule";
     }
 
@@ -156,20 +167,23 @@ public class AdminController {
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section,
                                @RequestParam("schoolYear") String schoolYear,
+                               @RequestParam("room") String room, // Added room parameter
                                HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         try {
-            scheduleService.saveSchedule(section, schoolYear);
+            scheduleService.saveSchedule(section, schoolYear, room); // Pass room to the service
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
         model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
         model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
+        model.addAttribute("rooms", roomRepository.findAll()); // Pass rooms to the model
         model.addAttribute("selectedSection", section); // Pass the selected section to the model
         model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
+        model.addAttribute("selectedRoom", room); // Pass the selected room to the model
         return "admin/schedule";
     }
 
