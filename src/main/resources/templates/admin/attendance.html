@@ -1,12 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Attendance Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-color: #9efba6;
+      --secondary-color: #005842;
+      --text-color: #4a9389;
+    }
+
+    body {
+      background-color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    h2, h4, h5 {
+      color: var(--secondary-color);
+    }
+
+    .card {
+    border-radius: 1rem;
+    border: 1px solid #63b55f;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.05); 
+    }
+
+
+    .summary-card {
+      min-height: 120px;
+      border-radius: 1rem;
+    }
+
+    .bg-present {
+      background-color: #007f5f;
+    }
+
+    .bg-absent {
+      background-color: #38b000;
+    }
+
+    .bg-late {
+      background-color: #8adf00;
+    }
+
+    .bg-total {
+      background-color: #2dc1a0;
+    }
+
+    .chart-card {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      border: 1px solid #dee2e6;
+      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-primary {
+      background-color: var(--secondary-color);
+      border-color: var(--secondary-color);
+    }
+
+    .btn-secondary {
+      background-color: var(--secondary-color);
+      border-color: var(--secondary-color);
+    }
+    .table-light {
+      background-color: var(--primary-color);
+      color: var(--secondary-color);
+    }
+
+    .table th, .table td {
+      vertical-align: middle;
+      color: var(--text-color);
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(0, 88, 66, 0.1);
+    }
+
+    th.custom-header {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .summary-card h5 {
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    hihi
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg" style="background-color: #9EFAA7;">
+  <div class="container-fluid px-5 py-2">
+    <a class="navbar-brand" href="#" style="color: #344D00; font-weight: bold;">Teacher Schedule</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+      aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="/teachers/" style="color: #344D00; font-weight: bold;">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/teachers/schedule" style="color: #344D00; font-weight: bold;">Classes</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/teachers/index" style="color: #344D00; font-weight: bold;">Attendance</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/teachers/profile" style="color: #344D00; font-weight: bold;">Profiles</a>
+        </li>
+      </ul>
+      <a href="/logout" class="btn btn-danger ms-auto" style="font-weight: bold;">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Content -->
+<div class="container py-4">
+  <!-- Section Title Banner -->
+  <div style="height: 60px; background-color: var(--secondary-color); display: flex; align-items: center; 
+  justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 30px;">
+   Daily Attendance Report
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card summary-card text-center p-3 bg-present text-white shadow">
+        <h5 class="fw-bold">Present</h5>
+        <h3 class="fw-bold">36</h3>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card summary-card text-center p-3 bg-absent text-white shadow">
+        <h5 class="fw-bold">Absent</h5>
+        <h3 class="fw-bold">4</h3>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card summary-card text-center p-3 bg-late text-white shadow">
+        <h5 class="fw-bold">Late</h5>
+        <h3 class="fw-bold">5</h3>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card summary-card text-center p-3 bg-total text-white shadow">
+        <h5 class="fw-bold">Total Employees</h5>
+        <h3 class="fw-bold">40</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <!-- Monthly Donut Chart (1/3) -->
+    <div class="col-md-4 mb-2 d-flex align-items-center justify-content-center">
+      <div class="card chart-card p-2 w-100">
+        <h5 class="fw-bold text-center mb-2">Monthly Status Breakdown</h5>
+        <canvas id="monthlyChart" height="160" style="max-width: 100%;"></canvas>
+      </div>
+    </div>
+  
+    <!-- Attendance Records (2/3) -->
+    <div class="col-md-8 mb-2">
+      <div class="card chart-card p-3 h-100" style="background-color: var(--primary-color);">
+        <h5 class="fw-bold mb-3 text-center">Attendance Records</h5>
+  
+        <!-- Filters -->
+        <div class="row gx-2 gy-2 mb-3">
+          <div class="col-6">
+            <input type="date" class="form-control" />
+          </div>
+          <div class="col-6">
+            <select class="form-select">
+              <option selected>Status</option>
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="late">Late</option>
+            </select>
+          </div>
+          <div class="col-8">
+            <input type="text" class="form-control" placeholder="Search by name..." />
+          </div>
+          <div class="col-4">
+            <button class="btn btn-secondary w-100 fw-bold">Search</button>
+          </div>
+        </div>
+  
+        <!-- Table -->
+        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+          <table class="table table-bordered table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr style="font-size: 0.9rem;">
+                <th class="custom-header">Name</th>
+                <th class="custom-header">Department</th>
+                <th class="custom-header">Date</th>
+                <th class="custom-header">Status</th>
+              </tr>
+            </thead>
+            <tbody style="font-size: 0.9rem;">
+              <tr>
+                <td>Sung Jinwoo</td>
+                <td>Korean Language Department</td>
+                <td>2025-04-24</td>
+                <td><span class="badge bg-success">Present</span></td>
+              </tr>
+              <tr>
+                <td>Gojo Satoru</td>
+                <td>Physics Department</td>
+                <td>2025-04-24</td>
+                <td><span class="badge bg-danger">Absent</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+
+
+<!-- Scripts -->
+<script>
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Present', 'Absent', 'Late'],
+      datasets: [{
+        data: [320, 24, 58],
+        backgroundColor: [
+          'rgba(0, 127, 95, 0.8)',   // Present
+          'rgba(56, 176, 0, 0.8)',   // Absent
+          'rgba(138, 223, 0, 0.8)'   // Late
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
