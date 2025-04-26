@@ -124,27 +124,18 @@ body {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <th scope="row" class="p-3">1</th>
-                    <td class="p-3">Beltran</td>
-                    <td class="p-3">Darren Harold</td>
-                    <td class="p-3">AP</td>
-                    <td class="p-3"><button type="button" class="btn btn-primary">See Schedule</button></td>
-                  </tr>
-                  <tr>
-                    <th scope="row" class="p-3">2</th>
-                    <td class="p-3">Lapid</td>
-                    <td class="p-3">Darwin</td>
-                    <td class="p-3">Math</td>
-                    <td class="p-3"><button type="button" class="btn btn-primary">See Schedule</button></td>
-                  </tr>
-                  <tr>
-                    <th scope="row" class="p-3">3</th>
-                    <td class="p-3">Aguas</td>
-                    <td class="p-3">Shealtiel Josh</td>
-                    <td class="p-3">English</td>
-                    <td class="p-3"><button type="button" class="btn btn-primary">See Schedule</button></td>
-                  </tr>
+                    <tr th:if="${teachers == null or teachers.isEmpty()}">
+                        <td colspan="5" class="text-center">No teachers available.</td>
+                    </tr>
+                    <tr th:each="teacher : ${teachers}">
+                        <td th:text="${teacher.id}"></td>
+                        <td th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"></td>
+                        <td th:text="${teacher.email}"></td>
+                        <td>
+                            <a th:href="@{/teachers/edit(id=${teacher.id})}" class="btn btn-warning">Edit</a>
+                            <a th:href="@{/teachers/archive(id=${teacher.id})}" class="btn btn-danger">Archive</a>
+                        </td>
+                    </tr>
                 </tbody>
               </table>
           </div>

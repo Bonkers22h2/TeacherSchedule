@@ -1,5 +1,6 @@
 package com.TeacherSchedule.TeacherSchedule.controllers;
 
+import com.TeacherSchedule.TeacherSchedule.models.ArchivedTeacher;
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
@@ -7,6 +8,7 @@ import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedTeacherRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,6 +37,9 @@ public class AdminController {
     @Autowired
     private RoomRepository roomRepository;
 
+    @Autowired
+    private ArchivedTeacherRepository archivedTeacherRepository; // Add repository for archived teachers
+
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
     public String showTeacherList(Model model, HttpSession session) {
@@ -49,7 +54,11 @@ public class AdminController {
         }
 
         List<Teacher> teachers = repo.findAll();
-        model.addAttribute("teachers", teachers);
+        if (teachers == null || teachers.isEmpty()) {
+            model.addAttribute("error", "No teachers found.");
+        } else {
+            model.addAttribute("teachers", teachers);
+        }
         return "admin/index";
     }
 
@@ -101,17 +110,24 @@ public class AdminController {
         return "redirect:/teachers";
     }
 
-    @GetMapping("/delete")
-    public String deleteTeacher(@RequestParam("id") int id, HttpSession session) {
+    @GetMapping("/archive")
+    public String archiveTeacher(@RequestParam("id") int id, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
-        if (!repo.existsById(id)) {
+        Teacher teacher = repo.findById(id).orElse(null);
+        if (teacher == null) {
             throw new IllegalArgumentException("Teacher not found");
         }
 
+        // Save teacher to archived_teachers table
+        ArchivedTeacher archivedTeacher = new ArchivedTeacher(teacher);
+        archivedTeacherRepository.save(archivedTeacher);
+
+        // Delete teacher from the main table
         repo.deleteById(id);
+
         return "redirect:/teachers";
     }
 
