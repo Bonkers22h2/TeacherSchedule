@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/teachers")
@@ -56,8 +54,10 @@ public class AdminController {
         List<Teacher> teachers = repo.findAll();
         if (teachers == null || teachers.isEmpty()) {
             model.addAttribute("error", "No teachers found.");
+            model.addAttribute("teacherCount", 0);
         } else {
             model.addAttribute("teachers", teachers);
+            model.addAttribute("teacherCount", teachers.size());
         }
         return "admin/index";
     }
