@@ -98,6 +98,17 @@
                     </option>
                 </select>
             </div>
+
+            <!-- Dropdown for Grade Level -->
+            <div class="col-md-4">
+                <label for="gradeLevel" class="form-label">Select Grade Level</label>
+                <select name="gradeLevel" id="gradeLevel" class="form-select" form="generateForm" required>
+                    <option value="" disabled>Select Grade</option>
+                    <option th:each="grade : ${#numbers.sequence(1, 10)}" th:value="${'Grade ' + grade}" 
+                            th:text="${'Grade ' + grade}" th:selected="${selectedGradeLevel == 'Grade ' + grade}">
+                    </option>
+                </select>
+            </div>
         </div>
 
         <div class="row mb-4">
@@ -107,6 +118,7 @@
                     <input type="hidden" name="section" id="generateSection" value="" />
                     <input type="hidden" name="schoolYear" id="generateSchoolYear" value="" />
                     <input type="hidden" name="room" id="generateRoom" value="" /> <!-- Added hidden input for room -->
+                    <input type="hidden" name="gradeLevel" id="generateGradeLevel" value="" /> <!-- Added hidden input for grade level -->
                     <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
                 </form>
             </div>
@@ -117,6 +129,7 @@
                     <input type="hidden" name="section" id="saveSection" value="" />
                     <input type="hidden" name="schoolYear" id="saveSchoolYear" value="" />
                     <input type="hidden" name="room" id="saveRoom" value="" /> <!-- Added hidden input for room -->
+                    <input type="hidden" name="gradeLevel" id="saveGradeLevel" value="" /> <!-- Added hidden input for grade level -->
                     <button type="submit" class="btn btn-secondary w-100">Save Schedule</button>
                 </form>
             </div>
@@ -134,7 +147,8 @@
                     <th>Time Slot</th>
                     <th>Subject</th>
                     <th>Section</th>
-                    <th>School Year</th> <!-- Added School Year column -->
+                    <th>School Year</th>
+                    <th>Grade Level</th> <!-- Added Grade Level column -->
                 </tr>
             </thead>
             <tbody>
@@ -144,6 +158,7 @@
                     <td th:text="${#strings.arraySplit(entry, ' - ')[2]}"></td> <!-- Subject -->
                     <td th:text="${#strings.arraySplit(entry, ' - ').length > 3 ? #strings.arraySplit(entry, ' - ')[3] : 'Unknown Section'}"></td> <!-- Section -->
                     <td th:text="${selectedSchoolYear}"></td> <!-- Display School Year -->
+                    <td th:text="${selectedGradeLevel}"></td> <!-- Display Grade Level -->
                 </tr>
             </tbody>
         </table>
@@ -161,9 +176,14 @@
             document.getElementById('saveSchoolYear').value = this.value;
         });
 
-        document.getElementById('room').addEventListener('change', function () { // Added event listener for room
+        document.getElementById('room').addEventListener('change', function () {
             document.getElementById('generateRoom').value = this.value;
             document.getElementById('saveRoom').value = this.value;
+        });
+
+        document.getElementById('gradeLevel').addEventListener('change', function () {
+            document.getElementById('generateGradeLevel').value = this.value;
+            document.getElementById('saveGradeLevel').value = this.value;
         });
 
         // Initialize the hidden inputs with the current dropdown values
@@ -171,8 +191,10 @@
         document.getElementById('saveSection').value = document.getElementById('section').value;
         document.getElementById('generateSchoolYear').value = document.getElementById('schoolYear').value;
         document.getElementById('saveSchoolYear').value = document.getElementById('schoolYear').value;
-        document.getElementById('generateRoom').value = document.getElementById('room').value; // Initialize room
-        document.getElementById('saveRoom').value = document.getElementById('room').value; // Initialize room
+        document.getElementById('generateRoom').value = document.getElementById('room').value;
+        document.getElementById('saveRoom').value = document.getElementById('room').value;
+        document.getElementById('generateGradeLevel').value = document.getElementById('gradeLevel').value;
+        document.getElementById('saveGradeLevel').value = document.getElementById('gradeLevel').value;
     </script>
 </body>
 

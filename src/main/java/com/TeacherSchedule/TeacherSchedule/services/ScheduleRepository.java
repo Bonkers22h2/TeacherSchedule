@@ -16,4 +16,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     // Check if a teacher is already assigned to a schedule at a specific time slot
     boolean existsByTimeSlotAndTeacher(String timeSlot, Teacher teacher);
+
+    // Methods for filtering schedules
+    List<Schedule> findByGradeLevel(String gradeLevel); // Filter by grade level
+    List<Schedule> findBySectionAndSchoolYearAndGradeLevel(String section, String schoolYear, String gradeLevel);
+    List<Schedule> findBySectionAndGradeLevel(String section, String gradeLevel);
+    List<Schedule> findBySchoolYearAndGradeLevel(String schoolYear, String gradeLevel);
+    List<Schedule> findBySchoolYear(String schoolYear);
 }

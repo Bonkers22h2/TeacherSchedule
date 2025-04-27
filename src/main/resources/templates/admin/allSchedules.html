@@ -83,39 +83,50 @@
 
         <a href="/teachers/schedule" class="btn btn-success mb-3">Back</a>
 
-        <!-- Dropdowns for Section and School Year -->
-        <div class="row mb-4">
-            <!-- Dropdown for Section -->
-            <div class="col-md-6">
-                <label for="section" class="form-label">Select Section</label>
-                <select name="section" id="section" class="form-select" required>
-                    <option th:each="section : ${sections}" th:value="${section.name}" 
-                            th:text="${section.name}" th:selected="${section == selectedSection}">
-                    </option>
-                </select>
-            </div>
-
-            <!-- Dropdown for School Year -->
-            <div class="col-md-6">
-                <label for="schoolYear" class="form-label">Select School Year</label>
-                <select name="schoolYear" id="schoolYear" class="form-select" required>
-                    <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
-                            th:text="${schoolYear.year}" th:selected="${schoolYear == selectedSchoolYear}">
-                    </option>
-                </select>
-            </div>
-        </div>
-
         <!-- Filter Schedule Button -->
         <form id="filterForm" action="/teachers/filterSchedule" method="GET" class="mb-4">
-            <input type="hidden" name="section" id="filterSection" th:value="${selectedSection}">
-            <input type="hidden" name="schoolYear" id="filterSchoolYear" th:value="${selectedSchoolYear}">
-            <button type="button" class="btn btn-primary mb-3 w-100" onclick="submitFilterForm()">Show Schedule</button>
+            <div class="row mb-4">
+                <!-- Dropdown for Section -->
+                <div class="col-md-4">
+                    <label for="section" class="form-label">Select Section</label>
+                    <select name="section" id="section" class="form-select">
+                        <option value="" selected>All Sections</option>
+                        <option th:each="section : ${sections}" th:value="${section.name}" 
+                                th:text="${section.name}" th:selected="${selectedSection == section.name}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Dropdown for School Year -->
+                <div class="col-md-4">
+                    <label for="schoolYear" class="form-label">Select School Year</label>
+                    <select name="schoolYear" id="schoolYear" class="form-select">
+                        <option value="" selected>All School Years</option>
+                        <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
+                                th:text="${schoolYear.year}" th:selected="${selectedSchoolYear == schoolYear.year}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Dropdown for Grade Level -->
+                <div class="col-md-4">
+                    <label for="gradeLevel" class="form-label">Select Grade Level</label>
+                    <select name="gradeLevel" id="gradeLevel" class="form-select">
+                        <option value="" selected>All Grade Levels</option>
+                        <option th:each="grade : ${#numbers.sequence(1, 10)}" th:value="${'Grade ' + grade}" 
+                                th:text="${'Grade ' + grade}" th:selected="${selectedGradeLevel == 'Grade ' + grade}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mb-3 w-100">Show Schedule</button>
         </form>
 
         <!-- Auto-Assign Teacher Button -->
         <form id="assignForm" action="/teachers/autoAssignTeacher" method="POST" class="mb-4">
             <input type="hidden" name="section" id="assignSection" th:value="${selectedSection}">
+            <input type="hidden" name="schoolYear" id="assignSchoolYear" th:value="${selectedSchoolYear}">
+            <input type="hidden" name="gradeLevel" id="assignGradeLevel" th:value="${selectedGradeLevel}">
             <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
         </form>
 
@@ -127,7 +138,8 @@
                     <th>Subject</th>
                     <th>Section</th>
                     <th>Room</th>
-                    <th>School Year</th> <!-- Added School Year column -->
+                    <th>School Year</th>
+                    <th>Grade Level</th> 
                     <th>Assigned Teacher</th>
                 </tr>
             </thead>
@@ -138,7 +150,8 @@
                     <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.section}"></td>
                     <td th:text="${schedule.room}"></td>
-                    <td th:text="${schedule.schoolYear}"></td> <!-- Display School Year -->
+                    <td th:text="${schedule.schoolYear}"></td>
+                    <td th:text="${schedule.gradeLevel}"></td> <!-- Display Grade Level -->
                     <td th:classappend="${schedule.teacher == null ? 'text-danger' : ''}" 
                         th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}">
                     </td>
@@ -150,25 +163,21 @@
             // Synchronize the dropdown values with the hidden inputs for the filter form
             document.getElementById('section').addEventListener('change', function () {
                 document.getElementById('filterSection').value = this.value;
+                document.getElementById('filterSchoolYear').value = ''; // Reset other filters
+                document.getElementById('filterGradeLevel').value = '';
             });
 
             document.getElementById('schoolYear').addEventListener('change', function () {
                 document.getElementById('filterSchoolYear').value = this.value;
+                document.getElementById('filterSection').value = ''; // Reset other filters
+                document.getElementById('filterGradeLevel').value = '';
             });
 
-            // Initialize the hidden inputs with the current dropdown values
-            document.getElementById('filterSection').value = document.getElementById('section').value;
-            document.getElementById('filterSchoolYear').value = document.getElementById('schoolYear').value;
-
-            // Synchronize the dropdown value with the hidden input for the assign form
-            document.getElementById('section').addEventListener('change', function () {
-                document.getElementById('assignSection').value = this.value;
+            document.getElementById('gradeLevel').addEventListener('change', function () {
+                document.getElementById('filterGradeLevel').value = this.value;
+                document.getElementById('filterSection').value = ''; // Reset other filters
+                document.getElementById('filterSchoolYear').value = '';
             });
-
-            // Submit the filter form
-            function submitFilterForm() {
-                document.getElementById('filterForm').submit();
-            }
 
             // Submit the assign form and show an alert box
             async function submitAssignForm() {
@@ -192,6 +201,18 @@
                     alert("An unexpected error occurred: " + error.message);
                 }
             }
+
+            // Ensure all dropdowns are required before submitting the form
+            document.getElementById('filterForm').addEventListener('submit', function (event) {
+                const section = document.getElementById('section').value;
+                const schoolYear = document.getElementById('schoolYear').value;
+                const gradeLevel = document.getElementById('gradeLevel').value;
+
+                if (!section || !schoolYear || !gradeLevel) {
+                    event.preventDefault();
+                    alert('All filters (Section, School Year, and Grade Level) are required.');
+                }
+            });
         </script>
     </div>
 </body>
