@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -138,7 +139,10 @@ public class AdminController {
     }
 
     @GetMapping("/schedule")
-    public String showSchedule(Model model, HttpSession session) {
+    public String showSchedule(Model model, HttpSession session,
+                               @RequestParam(value = "selectedSection", required = false) String selectedSection,
+                               @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
+                               @RequestParam(value = "selectedRoom", required = false) String selectedRoom) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -154,15 +158,20 @@ public class AdminController {
         }
 
         model.addAttribute("schedule", schedule);
-        model.addAttribute("sections", sectionRepository.findAll()); // Fetch sections from the database
-        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Fetch school years from the database
-        model.addAttribute("rooms", roomRepository.findAll()); // Fetch rooms from the database
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("selectedSection", selectedSection);
+        model.addAttribute("selectedSchoolYear", selectedSchoolYear);
+        model.addAttribute("selectedRoom", selectedRoom);
         return "admin/schedule";
     }
 
     @PostMapping("/generateSchedule")
     public String generateSchedule(@RequestParam("section") String section,
                                    @RequestParam("schoolYear") String schoolYear,
+                                   @RequestParam("room") String room,
+                                   @RequestParam("gradeLevel") String gradeLevel,
                                    Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
@@ -173,64 +182,86 @@ public class AdminController {
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
-        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
-        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
-        model.addAttribute("selectedSection", section); // Pass the selected section to the model
-        model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
+
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("selectedSection", section); // Persist selected section
+        model.addAttribute("selectedSchoolYear", schoolYear); // Persist selected school year
+        model.addAttribute("selectedRoom", room); // Persist selected room
+        model.addAttribute("selectedGradeLevel", gradeLevel); // Persist selected grade level
         return "admin/schedule";
     }
 
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section,
                                @RequestParam("schoolYear") String schoolYear,
-                               @RequestParam("room") String room, // Added room parameter
+                               @RequestParam("room") String room,
+                               @RequestParam("gradeLevel") String gradeLevel, // Added gradeLevel parameter
                                HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         try {
-            scheduleService.saveSchedule(section, schoolYear, room); // Pass room to the service
+            scheduleService.saveSchedule(section, schoolYear, room, gradeLevel); // Pass gradeLevel to the service
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
-        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
-        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
-        model.addAttribute("rooms", roomRepository.findAll()); // Pass rooms to the model
-        model.addAttribute("selectedSection", section); // Pass the selected section to the model
-        model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
-        model.addAttribute("selectedRoom", room); // Pass the selected room to the model
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("selectedSection", section);
+        model.addAttribute("selectedSchoolYear", schoolYear);
+        model.addAttribute("selectedRoom", room);
+        model.addAttribute("selectedGradeLevel", gradeLevel); // Pass the selected grade level to the model
         return "admin/schedule";
     }
 
     @GetMapping("/allSchedules")
-    public String showAllSchedules(Model model, HttpSession session) {
+    public String showAllSchedules(Model model, HttpSession session,
+                                    @RequestParam(value = "selectedSection", required = false) String selectedSection,
+                                    @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
+                                    @RequestParam(value = "selectedGradeLevel", required = false) String selectedGradeLevel) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         List<Schedule> schedules = scheduleService.getAllSchedules();
         model.addAttribute("schedules", schedules);
-        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
-        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("selectedSection", selectedSection);
+        model.addAttribute("selectedSchoolYear", selectedSchoolYear);
+        model.addAttribute("selectedGradeLevel", selectedGradeLevel);
         return "admin/allSchedules";
     }
 
     @GetMapping("/filterSchedule")
-    public String filterSchedule(@RequestParam("section") String section,
-                                  @RequestParam("schoolYear") String schoolYear,
+    public String filterSchedule(@RequestParam(value = "section", required = false) String section,
+                                  @RequestParam(value = "schoolYear", required = false) String schoolYear,
+                                  @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
                                   Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
-        // Filter schedules by section and school year
-        List<Schedule> schedules = scheduleService.getSchedulesBySectionAndSchoolYear(section, schoolYear);
+        List<Schedule> schedules;
+
+        if ((section == null || section.isEmpty()) &&
+            (schoolYear == null || schoolYear.isEmpty()) &&
+            (gradeLevel == null || gradeLevel.isEmpty())) {
+            schedules = scheduleService.getAllSchedules(); // No filters applied
+        } else {
+            schedules = scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel);
+        }
+
         model.addAttribute("schedules", schedules);
-        model.addAttribute("sections", sectionRepository.findAll()); // Pass sections to the model
-        model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Pass school years to the model
-        model.addAttribute("selectedSection", section); // Pass the selected section to the model
-        model.addAttribute("selectedSchoolYear", schoolYear); // Pass the selected school year to the model
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("selectedSection", section);
+        model.addAttribute("selectedSchoolYear", schoolYear);
+        model.addAttribute("selectedGradeLevel", gradeLevel);
         return "admin/allSchedules";
     }
 
@@ -252,6 +283,32 @@ public class AdminController {
             return "redirect:/signin";
         }
         return "admin/attendance";
+    }
+
+    @PostMapping("/autoAssignTeacher")
+    public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,
+                                      @RequestParam(value = "schoolYear", required = false) String schoolYear,
+                                      @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
+                                      HttpSession session, Model model) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        try {
+            scheduleService.autoAssignTeachers(section, schoolYear, gradeLevel);
+            model.addAttribute("successMessage", "Teachers successfully assigned based on the selected filters.");
+        } catch (IllegalStateException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        }
+
+        List<Schedule> schedules = scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel);
+        model.addAttribute("schedules", schedules);
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("selectedSection", section);
+        model.addAttribute("selectedSchoolYear", schoolYear);
+        model.addAttribute("selectedGradeLevel", gradeLevel);
+        return "admin/allSchedules";
     }
 
 }

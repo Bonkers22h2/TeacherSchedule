@@ -136,7 +136,7 @@ public class ScheduleService {
         return scheduleOutput;
     }
 
-    public void saveSchedule(String selectedSection, String selectedSchoolYear, String selectedRoom) {
+    public void saveSchedule(String selectedSection, String selectedSchoolYear, String selectedRoom, String selectedGradeLevel) {
         if (currentSchedule.isEmpty()) {
             throw new IllegalStateException("No schedule has been generated to save.");
         }
@@ -144,8 +144,8 @@ public class ScheduleService {
         for (String entry : currentSchedule) {
             String[] parts = entry.split(" - ");
             if (parts.length >= 3) {
-                // Save the schedule with the selected section, school year, and room
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection, selectedSchoolYear, selectedRoom));
+                // Save the schedule with the selected section, school year, room, and grade level
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection, selectedSchoolYear, selectedRoom, selectedGradeLevel));
             }
         }
     }
@@ -166,10 +166,38 @@ public class ScheduleService {
         return scheduleRepository.findBySectionAndSchoolYear(section, schoolYear);
     }
 
-    public void autoAssignTeachers(String section) {
-        List<Schedule> schedules = scheduleRepository.findBySection(section);
+    public List<Schedule> getSchedulesByGradeLevel(String gradeLevel) {
+        return scheduleRepository.findByGradeLevel(gradeLevel);
+    }
+
+    public List<Schedule> getSchedulesBySectionSchoolYearAndGradeLevel(String section, String schoolYear, String gradeLevel) {
+        return scheduleRepository.findBySectionAndSchoolYearAndGradeLevel(section, schoolYear, gradeLevel);
+    }
+
+    public List<Schedule> getFilteredSchedules(String section, String schoolYear, String gradeLevel) {
+        if (section != null && schoolYear != null && gradeLevel != null) {
+            return scheduleRepository.findBySectionAndSchoolYearAndGradeLevel(section, schoolYear, gradeLevel);
+        } else if (section != null && schoolYear != null) {
+            return scheduleRepository.findBySectionAndSchoolYear(section, schoolYear);
+        } else if (section != null && gradeLevel != null) {
+            return scheduleRepository.findBySectionAndGradeLevel(section, gradeLevel);
+        } else if (schoolYear != null && gradeLevel != null) {
+            return scheduleRepository.findBySchoolYearAndGradeLevel(schoolYear, gradeLevel);
+        } else if (section != null) {
+            return scheduleRepository.findBySection(section);
+        } else if (schoolYear != null) {
+            return scheduleRepository.findBySchoolYear(schoolYear);
+        } else if (gradeLevel != null) {
+            return scheduleRepository.findByGradeLevel(gradeLevel);
+        } else {
+            return scheduleRepository.findAll(); // Default to all schedules
+        }
+    }
+
+    public void autoAssignTeachers(String section, String schoolYear, String gradeLevel) {
+        List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
         if (schedules.isEmpty()) {
-            throw new IllegalStateException("No schedules found for section " + section + ".");
+            throw new IllegalStateException("No schedules found for the selected filters.");
         }
 
         for (Schedule schedule : schedules) {
