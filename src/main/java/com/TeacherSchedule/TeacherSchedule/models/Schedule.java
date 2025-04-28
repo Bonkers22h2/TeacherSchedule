@@ -16,6 +16,26 @@ public class Schedule {
     private String schoolYear; // Added schoolYear field
     private String room; // Added room field
     private String gradeLevel; // Added gradeLevel field
+    private String subSubject; // Added field for subsubject
+
+    public String getSubSubject() {
+        return subSubject;
+    }
+
+    public void setSubSubject(String subSubject) {
+        this.subSubject = subSubject;
+    }
+
+    // Update constructor to include subSubject
+    public Schedule(String timeSlot, String subject, String section, String schoolYear, String room, String gradeLevel, String subSubject) {
+        this.timeSlot = timeSlot;
+        this.subject = subject;
+        this.section = section;
+        this.schoolYear = schoolYear;
+        this.room = room;
+        this.gradeLevel = gradeLevel;
+        this.subSubject = subSubject;
+    }
 
     @ManyToOne
     @JoinColumn(name = "teacher_id") // Ensure this maps to the correct column in the database

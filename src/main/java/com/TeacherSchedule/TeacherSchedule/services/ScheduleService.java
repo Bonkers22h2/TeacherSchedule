@@ -86,7 +86,7 @@ public class ScheduleService {
         return false; // No valid schedule found
     }
 
-    public List<String> generateSchedule(String section, String schoolYear) {
+    public List<String> generateSchedule(String section, String schoolYear, String gradeLevel) {
         // Check if a schedule already exists for the given section and school year
         if (scheduleRepository.findBySectionAndSchoolYear(section, schoolYear).size() > 0) {
             throw new IllegalStateException("A schedule already exists for section '" + section + "' in the school year '" + schoolYear + "'.");
@@ -118,8 +118,33 @@ public class ScheduleService {
                             continue;
                         }
 
+                        // Add subsubject logic for TLE
+                        String subjectName = scheduledClass.getName();
+                        if ("TLE".equals(subjectName)) {
+                            switch (gradeLevel) {
+                                case "Grade 1":
+                                case "Grade 2":
+                                case "Grade 3":
+                                case "Grade 4":
+                                    subjectName += " - Agriculture";
+                                    break;
+                                case "Grade 5":
+                                case "Grade 6":
+                                    subjectName += " - Industrial Arts";
+                                    break;
+                                case "Grade 7":
+                                case "Grade 8":
+                                    subjectName += " - Home Economics";
+                                    break;
+                                case "Grade 9":
+                                case "Grade 10":
+                                    subjectName += " - ICT";
+                                    break;
+                            }
+                        }
+
                         String classEntry = String.format("%02d:%02d - %02d:%02d - %s - Section %d",
-                                i, startMinute, endHour, endMinute, scheduledClass.getName(), scheduledClass.getSection());
+                                i, startMinute, endHour, endMinute, subjectName, scheduledClass.getSection());
                         scheduleOutput.add(classEntry);
                         scheduledSubjects.add(scheduledClass.getName());
                     } else if (timeSlots.get(timeSlotIndex) == -2) {
@@ -136,7 +161,7 @@ public class ScheduleService {
         return scheduleOutput;
     }
 
-    public void saveSchedule(String selectedSection, String selectedSchoolYear, String selectedRoom, String selectedGradeLevel) {
+    public void saveScheduleWithSubSubjects(String selectedSection, String selectedSchoolYear, String selectedRoom, String selectedGradeLevel) {
         if (currentSchedule.isEmpty()) {
             throw new IllegalStateException("No schedule has been generated to save.");
         }
@@ -144,8 +169,36 @@ public class ScheduleService {
         for (String entry : currentSchedule) {
             String[] parts = entry.split(" - ");
             if (parts.length >= 3) {
-                // Save the schedule with the selected section, school year, room, and grade level
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], parts[2], selectedSection, selectedSchoolYear, selectedRoom, selectedGradeLevel));
+                String subject = parts[2];
+                String subSubject = null;
+
+                // Add subsubject logic for TLE
+                if ("TLE".equals(subject)) {
+                    switch (selectedGradeLevel) {
+                        case "Grade 1":
+                        case "Grade 2":
+                        case "Grade 3":
+                        case "Grade 4":
+                            subSubject = "Agriculture";
+                            break;
+                        case "Grade 5":
+                        case "Grade 6":
+                            subSubject = "Industrial Arts";
+                            break;
+                        case "Grade 7":
+                        case "Grade 8":
+                            subSubject = "Home Economics";
+                            break;
+                        case "Grade 9":
+                        case "Grade 10":
+                            subSubject = "ICT";
+                            break;
+                    }
+                    subject += " - " + subSubject; // Append subsubject to the subject
+                }
+
+                // Save the schedule with the subsubject
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection, selectedSchoolYear, selectedRoom, selectedGradeLevel, subSubject));
             }
         }
     }
@@ -210,6 +263,11 @@ public class ScheduleService {
             boolean teacherAssigned = false;
 
             for (Teacher teacher : teachers) {
+                // Ensure the teacher is assigned to the correct grade level
+                if (!teacher.getGradeLevels().contains(gradeLevel)) {
+                    continue;
+                }
+
                 // Check if the teacher is already assigned to a schedule at the same time slot
                 boolean conflict = scheduleRepository.existsByTimeSlotAndTeacher(schedule.getTimeSlot(), teacher);
                 if (!conflict) {

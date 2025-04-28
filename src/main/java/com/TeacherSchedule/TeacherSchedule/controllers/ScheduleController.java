@@ -16,9 +16,10 @@ public class ScheduleController {
     @PostMapping("/teachers/schedule/generate")
     public String generateSchedule(@RequestParam("section") String section,
                                    @RequestParam("schoolYear") String schoolYear,
+                                   @RequestParam("gradeLevel") String gradeLevel, // Added gradeLevel parameter
                                    RedirectAttributes redirectAttributes) {
         try {
-            scheduleService.generateSchedule(section, schoolYear);
+            scheduleService.generateSchedule(section, schoolYear, gradeLevel); // Pass gradeLevel to the service
             redirectAttributes.addFlashAttribute("successMessage", "Schedule successfully generated for section " + section + " in the school year " + schoolYear + ".");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -178,7 +177,11 @@ public class AdminController {
         }
 
         try {
-            model.addAttribute("schedule", scheduleService.generateSchedule(section, schoolYear));
+            List<String> schedule = scheduleService.generateSchedule(section, schoolYear, gradeLevel);
+            model.addAttribute("schedule", schedule);
+
+            // Save the schedule to the database with subsubjects
+            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -204,7 +207,8 @@ public class AdminController {
         }
 
         try {
-            scheduleService.saveSchedule(section, schoolYear, room, gradeLevel); // Pass gradeLevel to the service
+            // Use the updated method to save schedules with subsubjects
+            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
