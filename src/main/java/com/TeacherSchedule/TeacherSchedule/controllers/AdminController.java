@@ -270,10 +270,12 @@ public class AdminController {
     }
 
     @GetMapping("/profile")
-    public String showProfile(HttpSession session) {
+    public String showProfile(@RequestParam(value = "teacherName", required = false) String teacherName, 
+                              Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
+        model.addAttribute("teacherName", teacherName); // Pass teacherName to the view
         return "admin/profile";
     }
 

@@ -8,10 +8,21 @@
     <title>Admin Profile</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
+            min-height: 100vh;
+            max-height: 1200px;
+            background-color: #05be99;
+            background-image: url('/images/shapez.png');
+            background-position: center;
+            background-size: cover;
+            backdrop-filter: blur(5px);
+        }
+
+        .container {
+            background-color: #ffffffce;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: #333 solid 3px;
         }
 
         .profile-container {
@@ -48,13 +59,14 @@
 
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
-    <div class="profile-container">
-        <h1 class="profile-header">Admin Profile</h1>
-        <p class="profile-subtext">Welcome to the profile tab. Manage your details here.</p>
+    <div class="container mt-5 px-5 py-5">
+        <h1 class="profile-header text-center">Admin Profile</h1>
+        <p class="profile-subtext text-center">Welcome to the profile tab. Manage your details here.</p>
 
         <div class="search-container">
             <input type="text" id="teacherSearch" class="form-control" placeholder="Search for a teacher by name"
-                style="width: 50%; margin: 0 auto;" oninput="suggestTeachers()">
+                   style="width: 50%; margin: 0 auto;" oninput="suggestTeachers()" 
+                   th:value="${param.teacherName}" />
             <div id="suggestions" class="list-group"
                 style="width: 50%; margin: 0 auto; position: absolute; z-index: 100; left: 25%;"></div>
             <button class="btn btn-primary mt-2" onclick="searchTeacher()">Search</button>
@@ -68,77 +80,91 @@
             <form id="teacherForm">
                 <input type="hidden" id="id" />
 
-                <div class="mb-3">
-                    <label>First Name</label>
-                    <input type="text" id="firstName" class="form-control" disabled />
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>First Name</label>
+                        <input type="text" id="firstName" class="form-control" disabled />
+                    </div>
+                    <div class="col-md-4">
+                        <label>Last Name</label>
+                        <input type="text" id="lastName" class="form-control" disabled />
+                    </div>
+                    <div class="col-md-4">
+                        <label>Middle Name</label>
+                        <input type="text" id="middleName" class="form-control" disabled />
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Last Name</label>
-                    <input type="text" id="lastName" class="form-control" disabled />
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Gender</label>
+                        <select id="gender" class="form-control" disabled>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Birth Date</label>
+                        <input type="date" id="birthDate" class="form-control" disabled />
+                    </div>
+                    <div class="col-md-4">
+                        <label>Contact Number</label>
+                        <input type="text" id="contactNumber" class="form-control" disabled />
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Middle Name</label>
-                    <input type="text" id="middleName" class="form-control" disabled />
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Email</label>
+                        <input type="email" id="email" class="form-control" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Address</label>
+                        <input type="text" id="address" class="form-control" disabled />
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label>Gender</label>
-                    <select id="gender" class="form-control" disabled>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label>Birth Date</label>
-                    <input type="date" id="birthDate" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Created At</label>
-                    <input type="date" id="createdAt" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Contact Number</label>
-                    <input type="text" id="contactNumber" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Email</label>
-                    <input type="email" id="email" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Address</label>
-                    <input type="text" id="address" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Subjects</label>
-                    <input type="text" id="subjects" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Grade Levels</label>
-                    <input type="text" id="gradeLevels" class="form-control" disabled />
-                </div>
-
-                <div class="mb-3">
-                    <label>Years of Experience</label>
-                    <input type="number" id="yearsOfExperience" class="form-control" disabled />
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Subjects</label>
+                        <select id="subjects" class="form-control" disabled>
+                            <option value="Math">Math</option>
+                            <option value="Filipino">Filipino</option>
+                            <option value="AP">AP</option>
+                            <option value="Science">Science</option>
+                            <option value="TLE">TLE</option>
+                            <option value="English">English</option>
+                            <option value="M.A.P.E.H.">M.A.P.E.H.</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Grade Levels</label>
+                        <select id="gradeLevels" class="form-control" disabled>
+                            <option value="Grade 1">Grade 1</option>
+                            <option value="Grade 2">Grade 2</option>
+                            <option value="Grade 3">Grade 3</option>
+                            <option value="Grade 4">Grade 4</option>
+                            <option value="Grade 5">Grade 5</option>
+                            <option value="Grade 6">Grade 6</option>
+                            <option value="Grade 7">Grade 7</option>
+                            <option value="Grade 8">Grade 8</option>
+                            <option value="Grade 9">Grade 9</option>
+                            <option value="Grade 10">Grade 10</option>
+                            <option value="Grade 11">Grade 11</option>
+                            <option value="Grade 12">Grade 12</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Years of Experience</label>
+                        <input type="number" id="yearsOfExperience" class="form-control" disabled />
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-between">
                     <button type="button" class="btn btn-warning" id="editButton" onclick="toggleEdit()">Edit</button>
-                    <button type="button" class="btn btn-primary d-none" id="saveButton"
-                        onclick="saveTeacher()">Save</button>
-                    <button type="button" class="btn btn-danger" id="archiveButton"
-                        onclick="archiveTeacher()">Archive</button>
-                    <button type="button" class="btn btn-success" onclick="window.location.href='/teachers/add'">Add
-                        Teacher</button>
+                    <button type="button" class="btn btn-primary d-none" id="saveButton" onclick="if(confirm('Are you sure you want to save the changes?')) saveTeacher()">Save</button>
+                    <button type="button" class="btn btn-danger" id="archiveButton" onclick="archiveTeacher()">Archive</button>
+                    <button type="button" class="btn btn-success" onclick="window.location.href='/teachers/add'">Add Teacher</button>
                 </div>
             </form>
         </div>
@@ -155,20 +181,25 @@
                     throw new Error("Teacher not found");
                 }
                 const teacher = await response.json();
-                document.getElementById('teacherForm').classList.remove('d-none');
-                document.getElementById('id').value = teacher.id;
-                document.getElementById('firstName').value = teacher.firstName;
-                document.getElementById('lastName').value = teacher.lastName;
-                document.getElementById('middleName').value = teacher.middleName;
-                document.getElementById('gender').value = teacher.gender;
-                document.getElementById('birthDate').value = teacher.birthDate;
-                document.getElementById('createdAt').value = teacher.createdAt;
-                document.getElementById('contactNumber').value = teacher.contactNumber;
-                document.getElementById('email').value = teacher.email;
-                document.getElementById('address').value = teacher.address;
-                document.getElementById('subjects').value = teacher.subjects;
-                document.getElementById('gradeLevels').value = teacher.gradeLevels;
-                document.getElementById('yearsOfExperience').value = teacher.yearsOfExperience;
+
+                // Ensure all required properties exist before assigning values
+                if (teacher && teacher.id) {
+                    document.getElementById('teacherForm').classList.remove('d-none');
+                    document.getElementById('id').value = teacher.id || '';
+                    document.getElementById('firstName').value = teacher.firstName || '';
+                    document.getElementById('lastName').value = teacher.lastName || '';
+                    document.getElementById('middleName').value = teacher.middleName || '';
+                    document.getElementById('gender').value = teacher.gender || '';
+                    document.getElementById('birthDate').value = teacher.birthDate || '';
+                    document.getElementById('contactNumber').value = teacher.contactNumber || '';
+                    document.getElementById('email').value = teacher.email || '';
+                    document.getElementById('address').value = teacher.address || '';
+                    document.getElementById('subjects').value = teacher.subjects || '';
+                    document.getElementById('gradeLevels').value = teacher.gradeLevels || '';
+                    document.getElementById('yearsOfExperience').value = teacher.yearsOfExperience || '';
+                } else {
+                    throw new Error("Incomplete teacher data");
+                }
             } catch (error) {
                 teacherInfoDiv.innerHTML = `<p class="text-danger">${error.message}</p>`;
             }
@@ -202,11 +233,11 @@
         }
 
         function toggleEdit() {
-            const isEditing = document.getElementById('editButton').textContent === 'Save';
+            const isEditing = document.getElementById('editButton').textContent === 'Edit';
             const inputs = document.querySelectorAll('#teacherForm input, #teacherForm select');
-            inputs.forEach(input => input.disabled = isEditing);
-            document.getElementById('editButton').textContent = isEditing ? 'Edit' : 'Save';
-            document.getElementById('saveButton').classList.toggle('d-none', isEditing);
+            inputs.forEach(input => input.disabled = !isEditing);
+            document.getElementById('editButton').textContent = isEditing ? 'Cancel' : 'Edit';
+            document.getElementById('saveButton').classList.toggle('d-none', !isEditing);
         }
 
         async function saveTeacher() {
@@ -232,7 +263,7 @@
                 });
                 if (!response.ok) throw new Error("Failed to save changes");
                 alert('Changes saved successfully');
-                toggleEdit();
+                toggleEdit(); // Switch back to view mode
             } catch (error) {
                 alert(error.message);
             }

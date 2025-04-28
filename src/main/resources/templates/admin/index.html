@@ -10,145 +10,158 @@
 
 
     <style>
-body {
-    min-height: 100vh; 
-    max-height: 1200px; 
-    
-    background-color: #05be99;
-    background-image: url('/images/shapez.png');
-    background-position: center;
-    background-size: cover;
-}
-
-        
+        body {
+            background-color: #05be99;
+            min-height: 100vh;
+            max-height: 1200px;
+            background-image: url('/images/shapez.png');
+            background-position: center;
+            background-size: cover;
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
-        <!-- Welcome chuchu -->
-        <div class="d-flex flex-column align-items-center" style="padding-top: 5vh;">
-            <h1 class="display-1 mb-5"  style="color: white;text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 6rem">Welcome Admin!</h1>
-        
-<div class="container-fluid mt-5 px-5 pb-5">      
-<div class="row g-3 align-items-stretch" style="height: 50vh;">
+    <!-- Welcome chuchu -->
+    <div class="d-flex flex-column align-items-center" style="padding-top: 5vh;">
+        <h1 class="display-1 mb-5"
+            style="color: rgb(0, 0, 0);text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 6rem">
+            Welcome Admin!</h1>
+
+        <div class="container-fluid mt-5 px-5 pb-5">
+            <div class="row g-3 align-items-stretch" style="height: 50vh;">
 
 
 
-    <!-- Left Side -->
-    <div class="col-md-6 d-flex flex-column">
-        <!-- Top Left Container -->
-        <div class="flex-fill me-2 ">
-            <div class="d-flex h-100">
-              <!-- Left Half -->
-              <div class="rounded-5 p-4 me-2 flex-fill shadow d-flex justify-content-between align-items-center" 
-     style="background-color: rgb(229, 192, 27); font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
-                            <!-- Label -->
-                            <div>
-                            Total No. <br> of Teachers
+                <!-- Left Side -->
+                <div class="col-md-6 d-flex flex-column">
+                    <!-- Top Left Container -->
+                    <div class="flex-fill me-2 ">
+                        <div class="d-flex h-100">
+                            <!-- Left Half -->
+                            <div class="rounded-5 p-4 me-2 flex-fill shadow d-flex justify-content-between align-items-center"
+                                style="background-color: rgb(229, 192, 27); font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
+                                <!-- Label -->
+                                <div>
+                                    Total No. <br> of Teachers
+                                </div>
+                                <!-- Number -->
+                                <div style=" font-family: 'Poppins', sans-serif; font-size: 3rem;">
+                                    <span th:text="${teacherCount}">0</span>
+                                </div>
                             </div>
-                            <!-- Number -->
-                            <div style=" font-family: 'Poppins', sans-serif; font-size: 3rem;">
-                                <span th:text="${teacherCount}">0</span>
+
+                            <!-- Right Half -->
+                            <div class="rounded-5 p-4 flex-fill shadow d-flex justify-content-between align-items-center"
+                                style="background-color: rgb(255, 87, 87); font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
+                                <!-- Label -->
+                                <div>
+                                    No. of Teachers <br> Present
+                                </div>
+
+                                <!-- Number -->
+                                <div style="font-size: 3rem;">
+                                    18
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-              <!-- Right Half -->
-              <div class="rounded-5 p-4 flex-fill shadow d-flex justify-content-between align-items-center"  
-              style="background-color: rgb(255, 87, 87); font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
-                            <!-- Label -->
-                            <div>
-                            No. of Teachers <br> Present
-                            </div>
-                    
-                            <!-- Number -->
-                            <div style="font-size: 3rem;">
-                            18
-                            </div>
+
+
+                    <!-- Bottom Left Container -->
+                    <div class="rounded-5 p-4 flex-fill mt-3 me-2 shadow p-3"
+                        style="background-color: #4B9CD3; overflow: hidden; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
+                        No. of Classes
+                        <div class="table-responsive flex-grow-1 rounded-5 mt-3 ">
+                            <table class="table" style="font-size: 0.9rem; text-align: center;  ">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="background-color: #3d7eaa; color: white;">Grade Level
+                                        </th>
+                                        <th scope="col" style="background-color: #3d7eaa; color: white;">No. of Sections
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="p-3">7</th>
+                                        <td class="p-3">10</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="p-3">8</th>
+                                        <td class="p-3">10</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="p-3">9</th>
+                                        <td class="p-3">9</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="p-3">10</th>
+                                        <td class="p-3">8</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="p-3">10</th>
+                                        <td class="p-3">8</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Right Side Table -->
+                <div class="col-md-6">
+
+                    <div class=" rounded-5 p-4 h-100 shadow"
+                        style="background-color: rgb(55, 207, 5); overflow: hidden; font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color:white;">
+                        Teachers
+                        <div class="table-responsive rounded-5 mt-3 ">
+                            <table class="table " style="font-size: 0.9rem; text-align: center;  ">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="p-3"
+                                            style="background-color: rgb(40, 148, 4); color: white;">UID</th>
+                                        <th scope="col" class="p-3"
+                                            style="background-color: rgb(40, 148, 4); color: white;">Last</th>
+                                        <th scope="col" class="p-3"
+                                            style="background-color: rgb(40, 148, 4); color: white;">First</th>
+                                        <th scope="col" class="p-3"
+                                            style="background-color: rgb(40, 148, 4); color: white;">Subject</th>
+                                        <th scope="col" class="p-3"
+                                            style="background-color: rgb(40, 148, 4); color: white;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${teachers == null or teachers.isEmpty()}">
+                                        <td colspan="5" class="text-center">No teachers available.</td>
+                                    </tr>
+                                    <tr th:each="teacher : ${teachers}">
+                                        <td th:text="${teacher.id}"></td>
+                                        <td th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"></td>
+                                        <td th:text="${teacher.email}"></td>
+                                        <td>
+                                            <a th:href="@{/teachers/profile(teacherName=${teacher.firstName + ' ' + teacher.lastName})}" 
+                                               class="btn btn-warning">Edit</a>
+                                            <a th:href="@{/teachers/archive(id=${teacher.id})}" 
+                                               class="btn btn-danger" 
+                                               onclick="return confirm('Are you sure you want to archive this teacher?');">Archive</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
-          </div>
-
-
-
-        <!-- Bottom Left Container -->
-        <div class="rounded-5 p-4 flex-fill mt-3 me-2 shadow p-3" style="background-color: #4B9CD3; overflow: hidden; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;"  >
-            No. of Classes
-            <div class="table-responsive flex-grow-1 rounded-5 mt-3 ">
-                <table class="table" style="font-size: 0.9rem; text-align: center;  ">
-                    <thead>
-                    <tr>
-                        <th scope="col" style="background-color: #3d7eaa; color: white;"  >Grade Level</th>
-                        <th scope="col" style="background-color: #3d7eaa; color: white;" >No. of Sections</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row" class="p-3">7</th>
-                            <td class="p-3">10</td>
-                        </tr>
-                        <tr>
-                            <th scope="row" class="p-3">8</th>
-                            <td class="p-3">10</td>
-                        </tr>
-                        <tr>
-                            <th scope="row" class="p-3">9</th>
-                            <td class="p-3">9</td>
-                        </tr>
-                        <tr>
-                            <th scope="row" class="p-3">10</th>
-                            <td class="p-3">8</td>
-                        </tr>
-                        <tr>
-                            <th scope="row" class="p-3">10</th>
-                            <td class="p-3">8</td>
-                        </tr>
-                    </tbody>
-                </table>
         </div>
-        </div>
-    </div>
-    
-
-
-    <!-- Right Side Table -->
-    <div class="col-md-6">
-        
-        <div class=" rounded-5 p-4 h-100 shadow" style="background-color: rgb(55, 207, 5); overflow: hidden; font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color:white;" >
-        Teachers
-            <div class="table-responsive rounded-5 mt-3 ">
-            <table class="table " style="font-size: 0.9rem; text-align: center;  ">
-                <thead>
-                  <tr>
-                    <th scope="col" class="p-3" style="background-color: rgb(40, 148, 4); color: white;">UID</th>
-                    <th scope="col" class="p-3" style="background-color: rgb(40, 148, 4); color: white;">Last</th>
-                    <th scope="col" class="p-3" style="background-color: rgb(40, 148, 4); color: white;">First</th>
-                    <th scope="col" class="p-3" style="background-color: rgb(40, 148, 4); color: white;">Subject</th>
-                    <th scope="col" class="p-3" style="background-color: rgb(40, 148, 4); color: white;"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${teachers == null or teachers.isEmpty()}">
-                        <td colspan="5" class="text-center">No teachers available.</td>
-                    </tr>
-                    <tr th:each="teacher : ${teachers}">
-                        <td th:text="${teacher.id}"></td>
-                        <td th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"></td>
-                        <td th:text="${teacher.email}"></td>
-                        <td>
-                            <a th:href="@{/teachers/edit(id=${teacher.id})}" class="btn btn-warning">Edit</a>
-                            <a th:href="@{/teachers/archive(id=${teacher.id})}" class="btn btn-danger">Archive</a>
-                        </td>
-                    </tr>
-                </tbody>
-              </table>
-          </div>
-        </div>
-
-      </div>
-      
-</div>
-</div>
     </div>
 </body>
+
 </html>

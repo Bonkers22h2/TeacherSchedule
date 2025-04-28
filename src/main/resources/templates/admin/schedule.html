@@ -9,68 +9,82 @@
     <style>
         /* Custom Styles */
         body {
-            background-color: #f4f8fb;
-            font-family: 'Arial', sans-serif;
+            background-color: #05be99;
+            min-height: 100vh; 
+            max-height: 1200px; 
+            background-image: url('/images/shapez.png');
+            background-position: center;
+            background-size: cover;
+            backdrop-filter: blur(5px);
         }
+
         .container {
-            background-color: #ffffff;
+            background-color: #ffffffce;
             border-radius: 8px;
             padding: 30px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: #333 solid 3px;
         }
+
         h1 {
             font-size: 2.5rem;
             color: #333;
         }
-        .btn {
-            border-radius: 5px;
-            padding: 10px 20px;
-        }
+
+
         .btn-success {
             background-color: #28a745;
             border: none;
         }
+
         .btn-primary {
             background-color: #007bff;
             border: none;
         }
+
         table {
             background-color: #fff;
             border-radius: 8px;
             overflow: hidden;
         }
+
         th, td {
             text-align: center;
             padding: 15px;
         }
+
         th {
             background-color: #007bff;
             color: white;
             font-weight: bold;
         }
+
         td {
             border-bottom: 1px solid #ddd;
         }
+
         .table-striped tbody tr:nth-child(odd) {
             background-color: #f9f9f9;
         }
+
         .table-striped tbody tr:hover {
             background-color: #f1f1f1;
         }
+
     </style>
 </head>
 
 <body>
-    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div th:replace="~{fragments/navbar :: navbar}" style="height: 60px;"></div>
 
-    <div class="container mt-5">
+    <div class="container mt-5 px-5 py-5">
         <h1 class="mb-4 text-center">Teacher Schedule</h1>
         <a href="/teachers" class="btn btn-success mb-3">Back</a>
         <a href="/teachers/allSchedules" class="btn btn-primary mb-3">View All Schedules</a>
 
         <div class="row mb-3">
             <!-- Dropdown for Section -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="section" class="form-label">Select Section</label>
                 <select name="section" id="section" class="form-select" form="generateForm" required>
                     <option th:each="section : ${sections}" th:value="${section.name}" 
@@ -80,7 +94,7 @@
             </div>
 
             <!-- Dropdown for School Year -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="schoolYear" class="form-label">Select School Year</label>
                 <select name="schoolYear" id="schoolYear" class="form-select" form="generateForm" required>
                     <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
@@ -90,7 +104,7 @@
             </div>
 
             <!-- Dropdown for Rooms -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="room" class="form-label">Select Room</label>
                 <select name="room" id="room" class="form-select" form="generateForm" required>
                     <option th:each="room : ${rooms}" th:value="${room.name}" 
@@ -100,7 +114,7 @@
             </div>
 
             <!-- Dropdown for Grade Level -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="gradeLevel" class="form-label">Select Grade Level</label>
                 <select name="gradeLevel" id="gradeLevel" class="form-select" form="generateForm" required>
                     <option value="" disabled>Select Grade</option>
@@ -109,27 +123,29 @@
                     </option>
                 </select>
             </div>
+            
         </div>
+        <div class="row mb-3">
+                <!-- Generate Schedule Button -->
+                <div class="col-md-6">
+                    <form id="generateForm" action="/teachers/schedule/generate" method="POST" onsubmit="return confirm('Are you sure you want to generate the schedule?');">
+                        <input type="hidden" name="section" id="generateSection" value="" />
+                        <input type="hidden" name="schoolYear" id="generateSchoolYear" value="" />
+                        <input type="hidden" name="room" id="generateRoom" value="" />
+                        <input type="hidden" name="gradeLevel" id="generateGradeLevel" value="" />
+                        <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
+                    </form>
+                </div>
 
-        <div class="row mb-4">
-            <!-- Generate Schedule Button -->
-            <div class="col-md-6">
-                <form id="generateForm" action="/teachers/schedule/generate" method="POST">
-                    <input type="hidden" name="section" id="generateSection" value="" />
-                    <input type="hidden" name="schoolYear" id="generateSchoolYear" value="" />
-                    <input type="hidden" name="room" id="generateRoom" value="" /> <!-- Added hidden input for room -->
-                    <input type="hidden" name="gradeLevel" id="generateGradeLevel" value="" /> <!-- Added hidden input for grade level -->
-                    <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
-                </form>
-            </div>
+        
 
             <!-- Save Schedule Button -->
             <div class="col-md-6">
-                <form id="saveForm" action="/teachers/saveSchedule" method="POST">
+                <form id="saveForm" action="/teachers/saveSchedule" method="POST" onsubmit="return confirm('Are you sure you want to save the schedule?');">
                     <input type="hidden" name="section" id="saveSection" value="" />
                     <input type="hidden" name="schoolYear" id="saveSchoolYear" value="" />
-                    <input type="hidden" name="room" id="saveRoom" value="" /> <!-- Added hidden input for room -->
-                    <input type="hidden" name="gradeLevel" id="saveGradeLevel" value="" /> <!-- Added hidden input for grade level -->
+                    <input type="hidden" name="room" id="saveRoom" value="" />
+                    <input type="hidden" name="gradeLevel" id="saveGradeLevel" value="" />
                     <button type="submit" class="btn btn-secondary w-100">Save Schedule</button>
                 </form>
             </div>

@@ -45,7 +45,7 @@ public class ScheduleService {
         classes.add(new Class("Science", 4, 1));
         classes.add(new Class("TLE", 5, 1));
         classes.add(new Class("English", 6, 1));
-        classes.add(new Class("MAPEH", 7, 1));
+        classes.add(new Class("M.A.P.E.H.", 7, 1));
         classes.add(new Class("Homeroom", 8, 1)); // Added Homeroom subject
     }
 
