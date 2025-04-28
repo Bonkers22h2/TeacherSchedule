@@ -15,17 +15,24 @@
             <!-- Tabs for Admin and Teacher -->
             <ul class="nav nav-tabs mb-4 justify-content-center nav-fill" id="signInTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab" aria-controls="admin" aria-selected="true" style="color: #344D00; font-weight: bold;">Admin</button>
+                    <button class="nav-link" th:classappend="${activeTab == 'teacher'} ? '' : 'active'"
+                            id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab"
+                            aria-controls="admin" aria-selected="${activeTab == 'teacher'} ? 'false' : 'true'"
+                            style="color: #344D00; font-weight: bold;">Admin</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="teacher-tab" data-bs-toggle="tab" data-bs-target="#teacher" type="button" role="tab" aria-controls="teacher" aria-selected="false" style="color: #344D00; font-weight: bold;">Teacher</button>
+                    <button class="nav-link" th:classappend="${activeTab == 'teacher'} ? 'active' : ''"
+                            id="teacher-tab" data-bs-toggle="tab" data-bs-target="#teacher" type="button" role="tab"
+                            aria-controls="teacher" aria-selected="${activeTab == 'teacher'} ? 'true' : 'false'"
+                            style="color: #344D00; font-weight: bold;">Teacher</button>
                 </li>
             </ul>
 
             <!-- Tab Content -->
             <div class="tab-content" id="signInTabContent">
                 <!-- Admin Sign-In Form -->
-                <div class="tab-pane fade show active" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+                <div class="tab-pane fade" th:classappend="${activeTab == 'teacher'} ? '' : 'show active'"
+                     id="admin" role="tabpanel" aria-labelledby="admin-tab">
                     <form method="post" th:action="@{/signin}">
                         <!-- Email Field -->
                         <div class="mb-3">
@@ -45,7 +52,8 @@
                 </div>
 
                 <!-- Teacher Sign-In Form -->
-                <div class="tab-pane fade" id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
+                <div class="tab-pane fade" th:classappend="${activeTab == 'teacher'} ? 'show active' : ''"
+                     id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
                     <form method="post" th:action="@{/signin/teacher}">
                         <!-- Teacher ID Field -->
                         <div class="mb-4">

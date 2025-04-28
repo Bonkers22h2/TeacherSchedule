@@ -39,17 +39,25 @@ public class AuthController {
     }
 
     @PostMapping("/signin/teacher")
-    public String processTeacherLogin(@RequestParam int teacherId,
-                                       HttpSession session,
-                                       Model model) {
-        Teacher teacher = teacherRepository.findById(teacherId).orElse(null); // Fetch teacher by ID
-        if (teacher != null) {
-            session.setAttribute("role", "teacher");
-            session.setAttribute("teacherId", teacher.getId()); // Store teacher ID in session
-            session.setAttribute("teacherName", teacher.getFirstName() + " " + teacher.getLastName()); // Store teacher name
-            return "redirect:/teachers"; // Redirect to teacher-specific page
-        } else {
-            model.addAttribute("error", "Invalid Teacher ID");
+    public String processTeacherLogin(@RequestParam String teacherId,
+                                    HttpSession session,
+                                    Model model) {
+        try {
+            int id = Integer.parseInt(teacherId);
+            Teacher teacher = teacherRepository.findById(id).orElse(null);
+            if (teacher != null) {
+                session.setAttribute("role", "teacher");
+                session.setAttribute("teacherId", teacher.getId());
+                session.setAttribute("teacherName", teacher.getFirstName() + " " + teacher.getLastName());
+                return "redirect:/teachers";
+            } else {
+                model.addAttribute("error", "Invalid Teacher ID");
+                model.addAttribute("activeTab", "teacher");
+                return "auth/signin";
+            }
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Teacher ID must be a number");
+            model.addAttribute("activeTab", "teacher");
             return "auth/signin";
         }
     }
