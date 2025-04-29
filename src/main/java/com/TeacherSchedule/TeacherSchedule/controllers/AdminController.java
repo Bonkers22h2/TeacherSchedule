@@ -1,6 +1,7 @@
 package com.TeacherSchedule.TeacherSchedule.controllers;
 
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedTeacher;
+import com.TeacherSchedule.TeacherSchedule.models.Attendance;
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
@@ -9,6 +10,7 @@ import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedTeacherRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.AttendanceRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Map;
 
 @Controller
@@ -42,6 +45,9 @@ public class AdminController {
     @Autowired
     private ArchivedTeacherRepository archivedTeacherRepository; // Add repository for archived teachers
 
+    @Autowired
+    private AttendanceRepository attendanceRepo;
+
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
     public String showTeacherList(Model model, HttpSession session) {
@@ -54,6 +60,8 @@ public class AdminController {
         if (!"admin".equals(role)) {
             return "redirect:/signin";
         }
+        
+
 
         List<Teacher> teachers = repo.findAll();
         if (teachers == null || teachers.isEmpty()) {
@@ -63,11 +71,27 @@ public class AdminController {
             model.addAttribute("teachers", teachers);
             model.addAttribute("teacherCount", teachers.size());
         }
-        addSectionCountToModel(model);// ITO DIN
+
+        
+    // Count number of teachers present today
+        LocalDate today = LocalDate.now();
+        List<Attendance> todaysAttendance = attendanceRepo.findAll()
+            .stream()
+            .filter(a -> today.equals(a.getDate()))
+            .collect(Collectors.toList());
+
+        long teachersPresent = todaysAttendance.stream()
+            .map(Attendance::getTeacherId)
+            .distinct()
+            .count();
+
+
+        model.addAttribute("teachersPresent", teachersPresent);
+        addSectionCountToModel(model);
         return "admin/index";
     }
 
-    // FROM HERE
+
     // Show Section count
     private void addSectionCountToModel(Model model) {
         // Fetch all schedules (to count sections per grade level)
@@ -98,8 +122,6 @@ public class AdminController {
         // Add the section count map to the model
         model.addAttribute("sectionCountByGrade", sectionCountByGrade);
     }
-    // TO HERE
-
     // Show add form
     @GetMapping("/add")
     public String showAddForm(Model model, HttpSession session) {
