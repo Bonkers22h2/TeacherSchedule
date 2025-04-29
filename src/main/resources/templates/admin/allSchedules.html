@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Schedules</title>
+    <link rel="icon" type="image/png" href="/images/logo.png"> <!-- Add favicon -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Custom Styles */
@@ -130,6 +131,14 @@
             <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
         </form>
 
+        <!-- Auto-Assign Lab Room Button -->
+        <form id="assignLabRoomForm" action="/teachers/autoAssignLabRoom" method="POST" class="mb-4">
+            <input type="hidden" name="section" id="assignLabRoomSection" th:value="${selectedSection}">
+            <input type="hidden" name="schoolYear" id="assignLabRoomSchoolYear" th:value="${selectedSchoolYear}">
+            <input type="hidden" name="gradeLevel" id="assignLabRoomGradeLevel" th:value="${selectedGradeLevel}">
+            <button type="button" class="btn btn-info mb-3 w-100" onclick="submitAssignLabRoomForm()">Auto-Assign Lab Room</button>
+        </form>
+
         <!-- Schedule Table -->
         <table class="table table-striped">
             <thead>
@@ -138,8 +147,9 @@
                     <th>Subject</th>
                     <th>Section</th>
                     <th>Room</th>
+                    <th>Lab Room</th> <!-- New Lab Room Column -->
                     <th>School Year</th>
-                    <th>Grade Level</th> 
+                    <th>Grade Level</th>
                     <th>Assigned Teacher</th>
                 </tr>
             </thead>
@@ -149,9 +159,10 @@
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.section}"></td>
-                    <td th:text="${schedule.room}"></td>
+                    <td>Room 1</td> <!-- Static Room 1 -->
+                    <td th:text="${schedule.labRoom != null ? schedule.labRoom : 'No Assigned Lab Room'}"></td> <!-- Lab Room -->
                     <td th:text="${schedule.schoolYear}"></td>
-                    <td th:text="${schedule.gradeLevel}"></td> <!-- Display Grade Level -->
+                    <td th:text="${schedule.gradeLevel}"></td>
                     <td th:classappend="${schedule.teacher == null ? 'text-danger' : ''}" 
                         th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}">
                     </td>
@@ -192,6 +203,29 @@
 
                     if (response.ok) {
                         alert("Teachers successfully assigned!");
+                        location.reload(); // Reload the page to reflect changes
+                    } else {
+                        const errorMessage = await response.text();
+                        alert("Error: " + errorMessage);
+                    }
+                } catch (error) {
+                    alert("An unexpected error occurred: " + error.message);
+                }
+            }
+
+            // Submit the assign lab room form and show an alert box
+            async function submitAssignLabRoomForm() {
+                const form = document.getElementById('assignLabRoomForm');
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: form.method,
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        alert("Lab rooms successfully assigned!");
                         location.reload(); // Reload the page to reflect changes
                     } else {
                         const errorMessage = await response.text();

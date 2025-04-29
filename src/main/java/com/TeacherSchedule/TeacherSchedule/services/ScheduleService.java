@@ -2,6 +2,8 @@ package com.TeacherSchedule.TeacherSchedule.services;
 
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
+import com.TeacherSchedule.TeacherSchedule.models.Room; // Import Room class
+import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository; // Import RoomRepository
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ScheduleService {
@@ -30,6 +33,9 @@ public class ScheduleService {
 
     @Autowired
     private TeacherRepository teacherRepository; // Add TeacherRepository to fetch teacher data
+
+    @Autowired
+    private RoomRepository roomRepository; // Inject RoomRepository
 
     private List<String> currentSchedule = new ArrayList<>(); // Store the generated schedule
 
@@ -197,8 +203,27 @@ public class ScheduleService {
                     subject += " - " + subSubject; // Append subsubject to the subject
                 }
 
-                // Save the schedule with the subsubject
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection, selectedSchoolYear, selectedRoom, selectedGradeLevel, subSubject));
+                // Assign laboratory room based on subject
+                String labRoom = null;
+                if (subSubject != null) {
+                    switch (subSubject) {
+                        case "ICT":
+                            labRoom = roomRepository.findFirstByLabType("ICT").map(Room::getName).orElse("Default ICT Lab");
+                            break;
+                        case "Home Economics":
+                            labRoom = roomRepository.findFirstByLabType("Home Economics").map(Room::getName).orElse("Default Home Economics Lab");
+                            break;
+                        case "Agriculture":
+                            labRoom = roomRepository.findFirstByLabType("Agriculture").map(Room::getName).orElse("Default Agriculture Lab");
+                            break;
+                        case "Science":
+                            labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName).orElse("Default Science Lab");
+                            break;
+                    }
+                }
+
+                // Save the schedule with the lab room
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection, selectedSchoolYear, labRoom, selectedGradeLevel, subSubject));
             }
         }
     }
@@ -283,6 +308,107 @@ public class ScheduleService {
 
             scheduleRepository.save(schedule);
         }
+    }
+
+    public void autoAssignLabRooms(String section, String schoolYear, String gradeLevel) {
+        List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
+        List<Room> availableRooms = roomRepository.findAll();
+
+        // Filter rooms with lab types
+        List<Room> labRooms = availableRooms.stream()
+                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty())
+                .collect(Collectors.toList());
+
+        if (schedules.isEmpty() || labRooms.isEmpty()) {
+            throw new IllegalStateException("No schedules or lab rooms available for assignment.");
+        }
+
+        for (Schedule schedule : schedules) {
+            for (Room room : labRooms) {
+                if (isLabRoomAvailable(schedule, room)) {
+                    schedule.setLabRoom(room.getName());
+                    scheduleRepository.save(schedule); // Save the updated schedule
+                    break; // Assign only one lab room per schedule
+                }
+            }
+        }
+    }
+
+    private boolean isLabRoomAvailable(Schedule schedule, Room room) {
+        // Check if the room's lab type matches the subject's lab requirement
+        if (!isLabTypeCompatible(schedule.getSubject(), room.getLabType())) {
+            return false;
+        }
+
+        // Check for time slot conflicts
+        List<Schedule> conflictingSchedules = getAllSchedules().stream()
+                .filter(s -> room.getName().equals(s.getLabRoom()) &&
+                        overlaps(s.getTimeSlot(), schedule.getTimeSlot()))
+                .collect(Collectors.toList());
+
+        return conflictingSchedules.isEmpty();
+    }
+
+    private boolean isLabTypeCompatible(String subject, String labType) {
+        if (subject == null || labType == null) {
+            return false;
+        }
+
+        // Handle TLE subsubjects
+        if (subject.startsWith("TLE - ")) {
+            String subSubject = subject.substring(6); // Extract subsubject after "TLE - "
+            switch (subSubject) {
+                case "ICT":
+                    return labType.equalsIgnoreCase("ICT");
+                case "Home Economics":
+                    return labType.equalsIgnoreCase("Home Economics");
+                case "Agriculture":
+                    return labType.equalsIgnoreCase("Agriculture");
+                default:
+                    return false;
+            }
+        }
+
+        // Handle other subjects
+        switch (subject) {
+            case "ICT":
+                return labType.equalsIgnoreCase("ICT");
+            case "Home Economics":
+                return labType.equalsIgnoreCase("Home Economics");
+            case "Agriculture":
+                return labType.equalsIgnoreCase("Agriculture");
+            case "Science":
+                return labType.equalsIgnoreCase("Science");
+            default:
+                return false;
+        }
+    }
+
+    private boolean overlaps(String timeSlot1, String timeSlot2) {
+        // Assuming time slots are in the format "HH:mm - HH:mm"
+        String[] parts1 = timeSlot1.split(" - ");
+        String[] parts2 = timeSlot2.split(" - ");
+
+        if (parts1.length < 2 || parts2.length < 2) {
+            return false; // Invalid time slot format
+        }
+
+        // Parse start and end times
+        int start1 = parseTime(parts1[0]);
+        int end1 = parseTime(parts1[1]);
+        int start2 = parseTime(parts2[0]);
+        int end2 = parseTime(parts2[1]);
+
+        // Check for overlap
+        return start1 < end2 && start2 < end1;
+    }
+
+    private int parseTime(String time) {
+        // Convert "HH:mm" to an integer representing minutes since midnight
+        String[] parts = time.split(":");
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+        return hours * 60 + minutes;
     }
 }
 

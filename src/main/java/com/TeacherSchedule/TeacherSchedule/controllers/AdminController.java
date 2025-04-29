@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/teachers")
@@ -41,6 +42,9 @@ public class AdminController {
 
     @Autowired
     private ArchivedTeacherRepository archivedTeacherRepository; // Add repository for archived teachers
+
+    @Autowired
+    private ScheduleService scheduleService;
 
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
@@ -169,12 +173,6 @@ public class AdminController {
         return "redirect:/teachers";
     }
 
-    private final ScheduleService scheduleService;
-
-    public AdminController(ScheduleService scheduleService) {
-        this.scheduleService = scheduleService;
-    }
-
     @GetMapping("/schedule")
     public String showSchedule(Model model, HttpSession session,
             @RequestParam(value = "selectedSection", required = false) String selectedSection,
@@ -197,7 +195,7 @@ public class AdminController {
         model.addAttribute("schedule", schedule);
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
-        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll()); // Fetch from the "room" table
         model.addAttribute("selectedSection", selectedSection);
         model.addAttribute("selectedSchoolYear", selectedSchoolYear);
         model.addAttribute("selectedRoom", selectedRoom);
@@ -214,12 +212,22 @@ public class AdminController {
             return "redirect:/signin";
         }
 
+        // Check if a schedule already exists
+        if (!scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel).isEmpty()) {
+            model.addAttribute("error", "A schedule already exists for the selected section, school year, and grade level.");
+            model.addAttribute("sections", sectionRepository.findAll());
+            model.addAttribute("schoolYears", schoolYearRepository.findAll());
+            model.addAttribute("rooms", roomRepository.findAll());
+            model.addAttribute("selectedSection", section);
+            model.addAttribute("selectedSchoolYear", schoolYear);
+            model.addAttribute("selectedRoom", room);
+            model.addAttribute("selectedGradeLevel", gradeLevel);
+            return "admin/schedule";
+        }
+
         try {
             List<String> schedule = scheduleService.generateSchedule(section, schoolYear, gradeLevel);
             model.addAttribute("schedule", schedule);
-
-            // Save the schedule to the database with subsubjects
-            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -227,10 +235,10 @@ public class AdminController {
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("rooms", roomRepository.findAll());
-        model.addAttribute("selectedSection", section); // Persist selected section
-        model.addAttribute("selectedSchoolYear", schoolYear); // Persist selected school year
-        model.addAttribute("selectedRoom", room); // Persist selected room
-        model.addAttribute("selectedGradeLevel", gradeLevel); // Persist selected grade level
+        model.addAttribute("selectedSection", section);
+        model.addAttribute("selectedSchoolYear", schoolYear);
+        model.addAttribute("selectedRoom", room);
+        model.addAttribute("selectedGradeLevel", gradeLevel);
         return "admin/schedule";
     }
 
@@ -238,10 +246,23 @@ public class AdminController {
     public String saveSchedule(@RequestParam("section") String section,
             @RequestParam("schoolYear") String schoolYear,
             @RequestParam("room") String room,
-            @RequestParam("gradeLevel") String gradeLevel, // Added gradeLevel parameter
+            @RequestParam("gradeLevel") String gradeLevel,
             HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
+        }
+
+        // Check if a schedule already exists
+        if (!scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel).isEmpty()) {
+            model.addAttribute("error", "A schedule already exists for the selected section, school year, and grade level.");
+            model.addAttribute("sections", sectionRepository.findAll());
+            model.addAttribute("schoolYears", schoolYearRepository.findAll());
+            model.addAttribute("rooms", roomRepository.findAll());
+            model.addAttribute("selectedSection", section);
+            model.addAttribute("selectedSchoolYear", schoolYear);
+            model.addAttribute("selectedRoom", room);
+            model.addAttribute("selectedGradeLevel", gradeLevel);
+            return "admin/schedule";
         }
 
         try {
@@ -353,6 +374,20 @@ public class AdminController {
         model.addAttribute("selectedSchoolYear", schoolYear);
         model.addAttribute("selectedGradeLevel", gradeLevel);
         return "admin/allSchedules";
+    }
+
+    @PostMapping("/autoAssignLabRoom")
+    public String autoAssignLabRoom(@RequestParam(value = "section", required = false) String section,
+                                    @RequestParam(value = "schoolYear", required = false) String schoolYear,
+                                    @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            scheduleService.autoAssignLabRooms(section, schoolYear, gradeLevel);
+            redirectAttributes.addFlashAttribute("successMessage", "Lab rooms successfully assigned!");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/teachers/allSchedules";
     }
 
 }

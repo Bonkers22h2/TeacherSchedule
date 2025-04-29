@@ -11,22 +11,22 @@ public class Schedule {
     private Long id;
 
     private String timeSlot;
-    private String subject; // Renamed from className to subject
-    private String section; // Column for the section
-    private String schoolYear; // Added schoolYear field
-    private String room; // Added room field
-    private String gradeLevel; // Added gradeLevel field
-    private String subSubject; // Added field for subsubject
+    private String subject;
+    private String section;
+    private String schoolYear;
+    private String room;
+    private String gradeLevel;
+    private String subSubject;
+    private String labRoom;
 
-    public String getSubSubject() {
-        return subSubject;
-    }
+    @ManyToOne
+    @JoinColumn(name = "teacher_id") // Maps to the teacher table
+    private Teacher teacher; // New field for the assigned teacher
 
-    public void setSubSubject(String subSubject) {
-        this.subSubject = subSubject;
-    }
+    // Default constructor
+    public Schedule() {}
 
-    // Update constructor to include subSubject
+    // Constructor with all fields except teacher
     public Schedule(String timeSlot, String subject, String section, String schoolYear, String room, String gradeLevel, String subSubject) {
         this.timeSlot = timeSlot;
         this.subject = subject;
@@ -37,27 +37,40 @@ public class Schedule {
         this.subSubject = subSubject;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "teacher_id") // Ensure this maps to the correct column in the database
-    private Teacher teacher;
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
 
-    public Schedule() {}
+    public String getTimeSlot() {
+        return timeSlot;
+    }
 
-    public Schedule(String timeSlot, String subject) { // Updated parameter name
+    public void setTimeSlot(String timeSlot) {
         this.timeSlot = timeSlot;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
         this.subject = subject;
     }
 
-    public Schedule(String timeSlot, String subject, String section) { // Updated parameter name
-        this.timeSlot = timeSlot;
-        this.subject = subject;
+    public String getSection() {
+        return section;
+    }
+
+    public void setSection(String section) {
         this.section = section;
     }
 
-    public Schedule(String timeSlot, String subject, String section, String schoolYear) {
-        this.timeSlot = timeSlot;
-        this.subject = subject;
-        this.section = section;
+    public String getSchoolYear() {
+        return schoolYear;
+    }
+
+    public void setSchoolYear(String schoolYear) {
         this.schoolYear = schoolYear;
     }
 
@@ -77,50 +90,20 @@ public class Schedule {
         this.gradeLevel = gradeLevel;
     }
 
-    // Update constructor to include room
-    public Schedule(String timeSlot, String subject, String section, String schoolYear, String room, String gradeLevel) {
-        this.timeSlot = timeSlot;
-        this.subject = subject;
-        this.section = section;
-        this.schoolYear = schoolYear;
-        this.room = room;
-        this.gradeLevel = gradeLevel;
+    public String getSubSubject() {
+        return subSubject;
     }
 
-    public Long getId() {
-        return id;
+    public void setSubSubject(String subSubject) {
+        this.subSubject = subSubject;
     }
 
-    public String getTimeSlot() {
-        return timeSlot;
+    public String getLabRoom() {
+        return labRoom;
     }
 
-    public void setTimeSlot(String timeSlot) {
-        this.timeSlot = timeSlot;
-    }
-
-    public String getSubject() { // Updated getter name
-        return subject;
-    }
-
-    public void setSubject(String subject) { // Updated setter name
-        this.subject = subject;
-    }
-
-    public String getSection() {
-        return section;
-    }
-
-    public void setSection(String section) {
-        this.section = section;
-    }
-
-    public String getSchoolYear() {
-        return schoolYear;
-    }
-
-    public void setSchoolYear(String schoolYear) {
-        this.schoolYear = schoolYear;
+    public void setLabRoom(String labRoom) {
+        this.labRoom = labRoom;
     }
 
     public Teacher getTeacher() {

@@ -3,6 +3,7 @@ package com.TeacherSchedule.TeacherSchedule.models;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "room") // Ensure it maps to the "room" table
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -10,14 +11,10 @@ public class Room {
 
     private String name;
 
-    public Room() {
-        // Default constructor
-    }
+    @Column(name = "lab_type") // Map to the correct column in the database
+    private String labType;
 
-    public Room(String name) {
-        this.name = name;
-    }
-
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -32,5 +29,13 @@ public class Room {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getLabType() {
+        return labType;
+    }
+
+    public void setLabType(String labType) {
+        this.labType = labType;
     }
 }
