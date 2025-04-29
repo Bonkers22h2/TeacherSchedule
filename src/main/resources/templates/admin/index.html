@@ -45,7 +45,7 @@
                                 style="background-color: rgb(229, 192, 27); font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
                                 <!-- Label -->
                                 <div>
-                                    Total No. <br> of Teachers
+                                    Total Teachers
                                 </div>
                                 <!-- Number -->
                                 <div style=" font-family: 'Poppins', sans-serif; font-size: 3rem;">
@@ -54,11 +54,11 @@
                             </div>
 
                             <!-- Right Half -->
-                            <div class="rounded-5 p-4 flex-fill shadow d-flex justify-content-between align-items-center"
+                            <div class="rounded-5 px-5 flex-fill shadow d-flex justify-content-between align-items-center"
                                 style="background-color: rgb(255, 87, 87); font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
                                 <!-- Label -->
                                 <div>
-                                    No. of Teachers <br> Present
+                                    Teachers Present
                                 </div>
 
                                 <!-- Number -->
@@ -86,25 +86,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <th scope="row" class="p-3">7</th>
-                                        <td class="p-3">10</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" class="p-3">8</th>
-                                        <td class="p-3">10</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" class="p-3">9</th>
-                                        <td class="p-3">9</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" class="p-3">10</th>
-                                        <td class="p-3">8</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row" class="p-3">10</th>
-                                        <td class="p-3">8</td>
+                                    <tr th:each="entry : ${sectionCountByGrade}">
+                                        <th scope="row" class="p-3" th:text="${entry.key}"></th> <!-- Grade Level -->
+                                        <td class="p-3" th:text="${entry.value}"></td> <!-- Number of Sections -->
                                     </tr>
                                 </tbody>
                             </table>
@@ -121,19 +105,18 @@
                         style="background-color: rgb(55, 207, 5); overflow: hidden; font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color:white;">
                         Teachers
                         <div class="table-responsive rounded-5 mt-3 ">
-                            <table class="table " style="font-size: 0.9rem; text-align: center;  ">
+                            <table class="table " style="font-size: 0.9rem; text-align: center; background-color: white; ">
                                 <thead>
                                     <tr>
                                         <th scope="col" class="p-3"
                                             style="background-color: rgb(40, 148, 4); color: white;">UID</th>
                                         <th scope="col" class="p-3"
-                                            style="background-color: rgb(40, 148, 4); color: white;">Last</th>
+                                            style="background-color: rgb(40, 148, 4); color: white;">Last Name</th>
                                         <th scope="col" class="p-3"
-                                            style="background-color: rgb(40, 148, 4); color: white;">First</th>
+                                            style="background-color: rgb(40, 148, 4); color: white;">First Name</th>
                                         <th scope="col" class="p-3"
-                                            style="background-color: rgb(40, 148, 4); color: white;">Subject</th>
-                                        <th scope="col" class="p-3"
-                                            style="background-color: rgb(40, 148, 4); color: white;"></th>
+                                            style="background-color: rgb(40, 148, 4); color: white;">Actions</th>
+                            
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -145,11 +128,10 @@
                                         <td th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"></td>
                                         <td th:text="${teacher.email}"></td>
                                         <td>
-                                            <a th:href="@{/teachers/profile(teacherName=${teacher.firstName + ' ' + teacher.lastName})}" 
-                                               class="btn btn-warning">Edit</a>
-                                            <a th:href="@{/teachers/archive(id=${teacher.id})}" 
-                                               class="btn btn-danger" 
-                                               onclick="return confirm('Are you sure you want to archive this teacher?');">Archive</a>
+                                            <a th:href="@{/teachers/profile(teacherName=${teacher.firstName + ' ' + teacher.lastName})}"
+                                                class="btn btn-warning">Edit</a>
+                                            <a th:href="@{/teachers/archive(id=${teacher.id})}" class="btn btn-danger"
+                                                onclick="return confirm('Are you sure you want to archive this teacher?');">Archive</a>
                                         </td>
                                     </tr>
                                 </tbody>

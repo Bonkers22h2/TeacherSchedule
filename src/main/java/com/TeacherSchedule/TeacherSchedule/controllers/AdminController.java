@@ -17,7 +17,11 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/teachers")
@@ -59,8 +63,42 @@ public class AdminController {
             model.addAttribute("teachers", teachers);
             model.addAttribute("teacherCount", teachers.size());
         }
+        addSectionCountToModel(model);// ITO DIN
         return "admin/index";
     }
+
+    // FROM HERE
+    // Show Section count
+    private void addSectionCountToModel(Model model) {
+        // Fetch all schedules (to count sections per grade level)
+        List<Schedule> schedules = scheduleService.getAllSchedules();
+
+        // Create a map to store unique sections for each grade level
+        Map<String, Set<String>> sectionsByGrade = new HashMap<>();
+
+        // Populate the map with grade levels and their respective unique sections
+        for (Schedule schedule : schedules) {
+            String gradeLevel = schedule.getGradeLevel();
+            String section = schedule.getSection();
+
+            if (gradeLevel != null && section != null) {
+                sectionsByGrade
+                        .computeIfAbsent(gradeLevel, k -> new HashSet<>())
+                        .add(section);
+            }
+        }
+
+        // Create a map to store the count of sections for each grade level
+        Map<String, Integer> sectionCountByGrade = new HashMap<>();
+
+        for (Map.Entry<String, Set<String>> entry : sectionsByGrade.entrySet()) {
+            sectionCountByGrade.put(entry.getKey(), entry.getValue().size());
+        }
+
+        // Add the section count map to the model
+        model.addAttribute("sectionCountByGrade", sectionCountByGrade);
+    }
+    // TO HERE
 
     // Show add form
     @GetMapping("/add")
@@ -139,9 +177,9 @@ public class AdminController {
 
     @GetMapping("/schedule")
     public String showSchedule(Model model, HttpSession session,
-                               @RequestParam(value = "selectedSection", required = false) String selectedSection,
-                               @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
-                               @RequestParam(value = "selectedRoom", required = false) String selectedRoom) {
+            @RequestParam(value = "selectedSection", required = false) String selectedSection,
+            @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
+            @RequestParam(value = "selectedRoom", required = false) String selectedRoom) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -168,10 +206,10 @@ public class AdminController {
 
     @PostMapping("/generateSchedule")
     public String generateSchedule(@RequestParam("section") String section,
-                                   @RequestParam("schoolYear") String schoolYear,
-                                   @RequestParam("room") String room,
-                                   @RequestParam("gradeLevel") String gradeLevel,
-                                   Model model, HttpSession session) {
+            @RequestParam("schoolYear") String schoolYear,
+            @RequestParam("room") String room,
+            @RequestParam("gradeLevel") String gradeLevel,
+            Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -198,10 +236,10 @@ public class AdminController {
 
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section,
-                               @RequestParam("schoolYear") String schoolYear,
-                               @RequestParam("room") String room,
-                               @RequestParam("gradeLevel") String gradeLevel, // Added gradeLevel parameter
-                               HttpSession session, Model model) {
+            @RequestParam("schoolYear") String schoolYear,
+            @RequestParam("room") String room,
+            @RequestParam("gradeLevel") String gradeLevel, // Added gradeLevel parameter
+            HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -224,9 +262,9 @@ public class AdminController {
 
     @GetMapping("/allSchedules")
     public String showAllSchedules(Model model, HttpSession session,
-                                    @RequestParam(value = "selectedSection", required = false) String selectedSection,
-                                    @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
-                                    @RequestParam(value = "selectedGradeLevel", required = false) String selectedGradeLevel) {
+            @RequestParam(value = "selectedSection", required = false) String selectedSection,
+            @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
+            @RequestParam(value = "selectedGradeLevel", required = false) String selectedGradeLevel) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -243,9 +281,9 @@ public class AdminController {
 
     @GetMapping("/filterSchedule")
     public String filterSchedule(@RequestParam(value = "section", required = false) String section,
-                                  @RequestParam(value = "schoolYear", required = false) String schoolYear,
-                                  @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
-                                  Model model, HttpSession session) {
+            @RequestParam(value = "schoolYear", required = false) String schoolYear,
+            @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
+            Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -253,8 +291,8 @@ public class AdminController {
         List<Schedule> schedules;
 
         if ((section == null || section.isEmpty()) &&
-            (schoolYear == null || schoolYear.isEmpty()) &&
-            (gradeLevel == null || gradeLevel.isEmpty())) {
+                (schoolYear == null || schoolYear.isEmpty()) &&
+                (gradeLevel == null || gradeLevel.isEmpty())) {
             schedules = scheduleService.getAllSchedules(); // No filters applied
         } else {
             schedules = scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel);
@@ -270,8 +308,8 @@ public class AdminController {
     }
 
     @GetMapping("/profile")
-    public String showProfile(@RequestParam(value = "teacherName", required = false) String teacherName, 
-                              Model model, HttpSession session) {
+    public String showProfile(@RequestParam(value = "teacherName", required = false) String teacherName,
+            Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -293,9 +331,9 @@ public class AdminController {
 
     @PostMapping("/autoAssignTeacher")
     public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,
-                                      @RequestParam(value = "schoolYear", required = false) String schoolYear,
-                                      @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
-                                      HttpSession session, Model model) {
+            @RequestParam(value = "schoolYear", required = false) String schoolYear,
+            @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
+            HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
