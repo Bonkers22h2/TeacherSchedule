@@ -58,11 +58,26 @@ public class AdminController {
         String role = (String) session.getAttribute("role");
 
         if ("teacher".equals(role)) {
-            return "teacher/index"; // Redirect to teacher's index.html
-        }
-
-        if (!"admin".equals(role)) {
-            return "redirect:/signin";
+            Integer teacherId = (Integer) session.getAttribute("teacherId");
+            if (teacherId == null) {
+                return "redirect:/signin";
+            }
+    
+            // Fetch the teacher entity
+            Teacher teacher = repo.findById(teacherId).orElse(null);
+            if (teacher == null) {
+                return "redirect:/signin";
+            }
+    
+            // Get schedules for this teacher
+            List<Schedule> schedules = scheduleService.getSchedulesByTeacher(teacher);
+            
+            // Derive teacherName from the Teacher entity
+            String teacherName = teacher.getFirstName() + " " + teacher.getLastName(); // ✅ Get from entity
+            
+            model.addAttribute("schedules", schedules);
+            model.addAttribute("teacherName", teacherName); // Pass to template
+            return "teacher/index";
         }
         
 

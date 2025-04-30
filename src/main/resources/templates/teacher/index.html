@@ -1,14 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
-<!-- Include the reusable head fragment -->
-<div th:replace="~{fragments/head :: head('Teacher Dashboard')}"></div>
-<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="d-flex align-items-center justify-content-center vh-100">
+    <style>
+        body {
+            background-color: #05be99;
+            min-height: 100vh;
+            background-image: url('/images/bg2.svg');
+            background-position: center;
+            background-size: cover;
+            backdrop-filter: blur(5px);
+        }
+    </style>
     <div class="container text-center bg-white p-4 rounded shadow">
-        <h1 class="mb-4">Teacher Dashboard</h1>
-        <h2 class="text-success">Hello, <span th:text="${session.teacherName}">Teacher Name</span>!</h2> <!-- Updated greeting -->
-        <button class="btn btn-danger mt-3" onclick="window.location.href='/logout'">Logout</button> <!-- Added logout functionality -->
-        <div class="info" id="teacherInfo"></div>
+        <h1 class="display-5 fw-bold mb-4">Teacher Dashboard</h1>
+        <h2 class="text-success fs-4 mb-3">Welcome, <span th:text="${teacherName}">Teacher Name</span>!</h2>
+        
+        <!-- Schedule Table -->
+        <table class="table table-striped mt-4">
+            <thead class="table-primary">
+                <tr>
+                    <th>Time Slot</th>
+                    <th>Subject</th>
+                    <th>Section</th>
+                    <th>Room</th>
+                    <th>School Year</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="schedule : ${schedules}">
+                    <td th:text="${schedule.timeSlot}"></td>
+                    <td th:text="${schedule.subject != null} ? ${schedule.subject} : ${schedule.className}"></td>
+                    <td th:text="${schedule.section}"></td>
+                    <td th:text="${schedule.room != null} ? ${schedule.room} : 'N/A'"></td>
+                    <td th:text="${schedule.schoolYear}"></td>
+                </tr>
+                <tr th:if="${schedules == null or schedules.empty}">
+                    <td colspan="5" class="text-center">No schedules assigned</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <button class="btn btn-danger mt-3" onclick="window.location.href='/logout'">Logout</button>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -23,4 +23,5 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findBySectionAndGradeLevel(String section, String gradeLevel);
     List<Schedule> findBySchoolYearAndGradeLevel(String schoolYear, String gradeLevel);
     List<Schedule> findBySchoolYear(String schoolYear);
+    List<Schedule> findByTeacher(Teacher teacher);
 }
