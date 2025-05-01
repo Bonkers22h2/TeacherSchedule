@@ -16,7 +16,7 @@
     }
 
     body {
-      background-color: #038a73;
+      background-color: #00ffcc;
       /* Darker shade of green */
       min-height: 100vh;
       max-height: 1200px;
@@ -28,17 +28,14 @@
       position: relative;
     }
 
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.3);
-      /* Semi-transparent black overlay */
-      z-index: -1;
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border: #333 solid 3px;
     }
+
 
     h2,
     h4,
@@ -115,13 +112,6 @@
     .summary-card h5 {
       color: white;
     }
-
-    .container {
-      background-color: #ffffffce;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border: #333 solid 3px;
-    }
   </style>
 </head>
 
@@ -130,8 +120,8 @@
   <!-- Page Content -->
   <div class="container my-5 px-5 py-5">
     <!-- Section Title Banner -->
-    <div style="height: 60px; background-color: var(--secondary-color); display: flex; align-items: center; 
-  justify-content: center; color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 30px;">
+    <div style="height: 60px; display: flex; align-items: center; 
+  justify-content: center; color: rgb(0, 0, 0); font-size: 2rem; font-weight: bold; margin-bottom: 30px;">
       Daily Attendance Report
     </div>
 
@@ -171,112 +161,110 @@
         </div>
       </div>
 
- <!-- Attendance Records (2/3) -->
-<div class="col-md-8 mb-2">
-  <div class="card chart-card p-3 h-100" style="background-color: var(--primary-color);">
-    <h5 class="fw-bold mb-3 text-center">Attendance Records</h5>
+      <!-- Attendance Records (2/3) -->
+      <div class="col-md-8 mb-2">
+        <div class="card chart-card p-3 h-100" style="background-color: var(--primary-color);">
+          <h5 class="fw-bold mb-3 text-center">Attendance Records</h5>
 
-    <!-- Search Bar Container -->
-    <div class="search-container d-flex justify-content-center mb-3" style="position: relative;">
-      <div class="d-flex" style="width: 100%;">
-        <!-- Search Bar (2/3 of the width) -->
-        <input type="text" id="teacherSearch" class="form-control"
-               placeholder="Search for a teacher by name"
-               oninput="suggestTeachers()" th:value="${param.teacherName}" 
-               style="flex: 2;" />
-        
-        <!-- Search Button (1/3 of the width) -->
-        <button class="btn btn-primary ms-2" onclick="searchAttendance()" style="flex: 1;">Search</button>
+          <!-- Search Bar Container -->
+          <div class="search-container d-flex justify-content-center mb-3" style="position: relative;">
+            <div class="d-flex" style="width: 100%;">
+              <!-- Search Bar (2/3 of the width) -->
+              <input type="text" id="teacherSearch" class="form-control" placeholder="Search for a teacher by name"
+                oninput="suggestTeachers()" th:value="${param.teacherName}" style="flex: 2;" />
+
+              <!-- Search Button (1/3 of the width) -->
+              <button class="btn btn-primary ms-2" onclick="searchAttendance()" style="flex: 1;">Search</button>
+            </div>
+
+            <!-- Suggestions dropdown (if needed) -->
+            <div id="suggestions" class="list-group"
+              style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 50%; z-index: 100;">
+            </div>
+          </div>
+
+          <!-- Attendance Table (placed below the search bar) -->
+          <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+            <table class="table table-bordered table-hover align-middle mb-0" id="attendanceTable">
+              <thead class="table-light">
+                <tr style="font-size: 0.9rem;">
+                  <th class="custom-header">Name</th>
+                  <th class="custom-header">Subjects</th>
+                  <th class="custom-header">Date</th>
+                  <th class="custom-header">Status</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceBody" style="font-size: 0.9rem;">
+                <tr th:each="record : ${searchResults}">
+                  <td th:text="${record.name}">Name</td>
+                  <td th:text="${record.subjects}">Subjects</td>
+                  <td th:text="${record.date}">Date</td>
+                  <td th:text="${record.status}">Status</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    
-      <!-- Suggestions dropdown (if needed) -->
-      <div id="suggestions" class="list-group"
-           style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 50%; z-index: 100;">
-      </div>
-    </div>
-
-    <!-- Attendance Table (placed below the search bar) -->
-    <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
-      <table class="table table-bordered table-hover align-middle mb-0" id="attendanceTable">
-        <thead class="table-light">
-          <tr style="font-size: 0.9rem;">
-            <th class="custom-header">Name</th>
-            <th class="custom-header">Subjects</th>
-            <th class="custom-header">Date</th>
-            <th class="custom-header">Status</th>
-          </tr>
-        </thead>
-        <tbody id="attendanceBody" style="font-size: 0.9rem;">
-          <tr th:each="record : ${searchResults}">
-            <td th:text="${record.name}">Name</td>
-            <td th:text="${record.subjects}">Subjects</td>
-            <td th:text="${record.date}">Date</td>
-            <td th:text="${record.status}">Status</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Doughnut Chart Scripts -->
-    <script th:inline="javascript">
-      /*<![CDATA[*/
-      const monthlyPresent = /*[[${monthlyPresent}]]*/ 0;
-      const monthlyAbsent = /*[[${monthlyAbsent}]]*/ 0;
-      const monthlyLate = /*[[${monthlyLate}]]*/ 0;
-      /*]]>*/
+      <!-- Doughnut Chart Scripts -->
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        const monthlyPresent = /*[[${monthlyPresent}]]*/ 0;
+        const monthlyAbsent = /*[[${monthlyAbsent}]]*/ 0;
+        const monthlyLate = /*[[${monthlyLate}]]*/ 0;
+        /*]]>*/
 
-      new Chart(document.getElementById('monthlyChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Present', 'Absent', 'Late'],
-          datasets: [{
-            data: [monthlyPresent, monthlyAbsent, monthlyLate],
-            backgroundColor: [
-              'rgba(0, 127, 95, 0.8)',   // Present
-              'rgba(56, 176, 0, 0.8)',   // Absent
-              'rgba(138, 223, 0, 0.8)'   // Late
-            ],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom'
+        new Chart(document.getElementById('monthlyChart'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Present', 'Absent', 'Late'],
+            datasets: [{
+              data: [monthlyPresent, monthlyAbsent, monthlyLate],
+              backgroundColor: [
+                'rgba(0, 127, 95, 0.8)',   // Present
+                'rgba(56, 176, 0, 0.8)',   // Absent
+                'rgba(138, 223, 0, 0.8)'   // Late
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              }
             }
           }
-        }
-      });
-    </script>
-    <script>
+        });
+      </script>
+      <script>
 
-async function searchAttendance() {
-  const teacherName = document.getElementById('attendanceSearch').value;
-  const attendanceBody = document.getElementById('attendanceBody');
+        async function searchAttendance() {
+          const teacherName = document.getElementById('attendanceSearch').value;
+          const attendanceBody = document.getElementById('attendanceBody');
 
-  try {
-    const response = await fetch(`/api/attendance/search?name=${encodeURIComponent(teacherName)}`);
-    if (!response.ok) {
-      throw new Error("No attendance records found");
-    }
+          try {
+            const response = await fetch(`/api/attendance/search?name=${encodeURIComponent(teacherName)}`);
+            if (!response.ok) {
+              throw new Error("No attendance records found");
+            }
 
-    const attendanceRecords = await response.json();
-    attendanceBody.innerHTML = ""; // Clear existing rows
+            const attendanceRecords = await response.json();
+            attendanceBody.innerHTML = ""; // Clear existing rows
 
-    if (attendanceRecords.length === 0) {
-      attendanceBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No records found</td></tr>`;
-      return;
-    }
+            if (attendanceRecords.length === 0) {
+              attendanceBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No records found</td></tr>`;
+              return;
+            }
 
-   
-    attendanceRecords.forEach(record => {
-      const row = `
+
+            attendanceRecords.forEach(record => {
+              const row = `
         <tr>
           <td>${record.name || ''}</td>
           <td>${record.subjects || ''}</td>
@@ -284,42 +272,42 @@ async function searchAttendance() {
           <td>${record.status || ''}</td>
         </tr>
       `;
-      attendanceBody.innerHTML += row;  // Add the row to the table
-    });
+              attendanceBody.innerHTML += row;  // Add the row to the table
+            });
 
-  } catch (error) {
-    attendanceBody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${error.message}</td></tr>`;
-  }
-}
+          } catch (error) {
+            attendanceBody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${error.message}</td></tr>`;
+          }
+        }
 
 
         async function suggestTeachers() {
-            const query = document.getElementById('teacherSearch').value;
-            const suggestionsDiv = document.getElementById('suggestions');
-            suggestionsDiv.innerHTML = ''; // Clear previous suggestions
+          const query = document.getElementById('teacherSearch').value;
+          const suggestionsDiv = document.getElementById('suggestions');
+          suggestionsDiv.innerHTML = ''; // Clear previous suggestions
 
-            if (query.length < 1) return; // Don't fetch for empty input
+          if (query.length < 1) return; // Don't fetch for empty input
 
-            try {
-                const response = await fetch(`/api/teachers/suggestions?query=${encodeURIComponent(query)}`);
-                if (!response.ok) throw new Error("Failed to fetch suggestions");
+          try {
+            const response = await fetch(`/api/teachers/suggestions?query=${encodeURIComponent(query)}`);
+            if (!response.ok) throw new Error("Failed to fetch suggestions");
 
-                const suggestions = await response.json();
-                suggestions.forEach(teacher => {
-                    const suggestionItem = document.createElement('a');
-                    suggestionItem.className = 'list-group-item list-group-item-action';
-                    suggestionItem.textContent = `${teacher.firstName} ${teacher.lastName}`;
-                    suggestionItem.onclick = () => {
-                        document.getElementById('teacherSearch').value = `${teacher.firstName} ${teacher.lastName}`;
-                        suggestionsDiv.innerHTML = ''; // Clear suggestions
-                    };
-                    suggestionsDiv.appendChild(suggestionItem);
-                });
-            } catch (error) {
-                console.error(error.message);
-            }
+            const suggestions = await response.json();
+            suggestions.forEach(teacher => {
+              const suggestionItem = document.createElement('a');
+              suggestionItem.className = 'list-group-item list-group-item-action';
+              suggestionItem.textContent = `${teacher.firstName} ${teacher.lastName}`;
+              suggestionItem.onclick = () => {
+                document.getElementById('teacherSearch').value = `${teacher.firstName} ${teacher.lastName}`;
+                suggestionsDiv.innerHTML = ''; // Clear suggestions
+              };
+              suggestionsDiv.appendChild(suggestionItem);
+            });
+          } catch (error) {
+            console.error(error.message);
+          }
         }
-    </script>
+      </script>
 </body>
 
 </html>

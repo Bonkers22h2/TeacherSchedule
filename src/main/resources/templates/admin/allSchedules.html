@@ -10,7 +10,7 @@
     <style>
         /* Custom Styles */
         body {
-            background-color: #f4f8fb;
+            background-color: #00ffcc;
             font-family: 'Arial', sans-serif;
         }
         .container {
@@ -123,21 +123,35 @@
             <button type="submit" class="btn btn-primary mb-3 w-100">Show Schedule</button>
         </form>
 
-        <!-- Auto-Assign Teacher Button -->
-        <form id="assignForm" action="/teachers/autoAssignTeacher" method="POST" class="mb-4">
-            <input type="hidden" name="section" id="assignSection" th:value="${selectedSection}">
-            <input type="hidden" name="schoolYear" id="assignSchoolYear" th:value="${selectedSchoolYear}">
-            <input type="hidden" name="gradeLevel" id="assignGradeLevel" th:value="${selectedGradeLevel}">
-            <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
-        </form>
+        <div class="row">
+            <div class="col">
+                <form id="assignForm" action="/teachers/autoAssignTeacher" method="POST" class="mb-4">
+                    <input type="hidden" name="section" id="assignSection" th:value="${selectedSection}">
+                    <input type="hidden" name="schoolYear" id="assignSchoolYear" th:value="${selectedSchoolYear}">
+                    <input type="hidden" name="gradeLevel" id="assignGradeLevel" th:value="${selectedGradeLevel}">
+                    <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
+                </form>
+            </div>
+            <div class="col">
+                <form id="assignLabRoomForm" action="/teachers/autoAssignLabRoom" method="POST" class="mb-4">
+                    <input type="hidden" name="section" id="assignLabRoomSection" th:value="${selectedSection}">
+                    <input type="hidden" name="schoolYear" id="assignLabRoomSchoolYear" th:value="${selectedSchoolYear}">
+                    <input type="hidden" name="gradeLevel" id="assignLabRoomGradeLevel" th:value="${selectedGradeLevel}">
+                    <button type="button" class="btn btn-info mb-3 w-100" onclick="submitAssignLabRoomForm()">Auto-Assign Lab Room</button>
+                </form>
+            </div>
+        </div>
 
-        <!-- Auto-Assign Lab Room Button -->
-        <form id="assignLabRoomForm" action="/teachers/autoAssignLabRoom" method="POST" class="mb-4">
-            <input type="hidden" name="section" id="assignLabRoomSection" th:value="${selectedSection}">
-            <input type="hidden" name="schoolYear" id="assignLabRoomSchoolYear" th:value="${selectedSchoolYear}">
-            <input type="hidden" name="gradeLevel" id="assignLabRoomGradeLevel" th:value="${selectedGradeLevel}">
-            <button type="button" class="btn btn-info mb-3 w-100" onclick="submitAssignLabRoomForm()">Auto-Assign Lab Room</button>
-        </form>
+        <div class="row">
+            <div class="col">
+                <form id="archiveSchedulesForm" action="/teachers/archiveSchedules" method="POST" onsubmit="return confirmArchive();">
+                    <button type="submit" class="btn btn-danger mb-3 w-100">Archive All Schedules</button>
+                </form>
+            </div>
+            <div class="col">
+                <a href="/teachers/archivedSchedules" class="btn btn-secondary mb-3 w-100">View Archived Schedules</a>
+            </div>
+        </div>
 
         <!-- Schedule Table -->
         <table class="table table-striped">
@@ -247,6 +261,17 @@
                     alert('All filters (Section, School Year, and Grade Level) are required.');
                 }
             });
+
+            // Confirm admin password before archiving all schedules
+            function confirmArchive() {
+                const password = prompt("Enter the admin password to archive all schedules:");
+                if (password === "adminadmin") {
+                    return true;
+                } else {
+                    alert("Incorrect password. Archiving canceled.");
+                    return false;
+                }
+            }
         </script>
     </div>
 </body>

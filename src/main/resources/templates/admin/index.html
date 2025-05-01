@@ -12,38 +12,25 @@
 
     <style>
         body {
-            background-color: #038a73; /* Darker shade of green */
+            background-color: #00ffcc; /* Darker shade of green */
             min-height: 100vh;
             max-height: 1200px;
             background-image: url('/images/shapez.png');
             background-position: center;
             background-size: cover;
             backdrop-filter: blur(5px);
-            /* Remove unnecessary animations */
-            transition: none;
         }
-    
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent black overlay */
-            z-index: -1;
-            /* Remove unnecessary animations */
-            transition: none;
-        }
+
     </style>
 </head>
 
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <!-- Welcome chuchu -->
+     
     <div class="d-flex flex-column align-items-center" style="padding-top: 5vh;">
         <h1 class="display-1 mb-5"
-            style="color: white; text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 6rem">
+            style="color: rgb(0, 0, 0); text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 6rem">
             Welcome Admin!</h1>
 
         <div class="container-fluid mt-5 px-5 pb-5">
@@ -91,7 +78,7 @@
                     <div class="rounded-5 p-4 flex-fill mt-3 me-2 shadow p-3"
                         style="background-color: #4B9CD3; overflow: hidden; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
                         No. of Classes
-                        <div class="table-responsive flex-grow-1 rounded-5 mt-3 ">
+                        <div class="table-responsive flex-grow-1 rounded-5 mt-3" style="max-height: 1000px; overflow-y: auto;">
                             <table class="table" style="font-size: 0.9rem; text-align: center;  ">
                                 <thead>
                                     <tr>
@@ -120,7 +107,7 @@
                     <div class=" rounded-5 p-4 h-100 shadow"
                         style="background-color: rgb(55, 207, 5); overflow: hidden; font-weight: bold; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color:white;">
                         Teachers
-                        <div class="table-responsive rounded-5 mt-3 ">
+                        <div class="table-responsive rounded-5 mt-3" style="max-height: 500px; overflow-y: auto;">
                             <table class="table " style="font-size: 0.9rem; text-align: center; background-color: white; ">
                                 <thead>
                                     <tr>

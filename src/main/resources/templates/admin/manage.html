@@ -4,29 +4,20 @@
 <div th:replace="~{fragments/head :: head('Manage')}"></div>
 <style>
     body {
-        background-color: #038a73; /* Darker shade of green */
-        min-height: 100vh;
-        max-height: 1200px;
-        background-image: url('/images/shapez.png');
-        background-position: center;
-        background-size: cover;
-        backdrop-filter: blur(5px);
-        /* Add a dark overlay */
-        position: relative;
-    }
+            background-color: #00ffcc;
+            /* Darker shade of green */
+            min-height: 100vh;
+            max-height: 1200px;
+            background-image: url('/images/shapez.png');
+            background-position: center;
+            background-size: cover;
+            backdrop-filter: blur(5px);
+            /* Add a dark overlay */
+            position: relative;
+        }
 
-    body::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent black overlay */
-        z-index: -1;
-    }
-    .container {
-            background-color: #ffffffce;
+        .container {
+            background-color: #ffffff;
             border-radius: 8px;
             padding: 30px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -37,6 +28,23 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container mt-5 px-5 py-5">
         <h2 class="text-center mb-4">Manage Sections, School Years, and Rooms</h2>
+
+        <!-- Display error messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Buttons to toggle tables -->
+        <div class="d-flex justify-content-center mb-4">
+            <button class="btn btn-primary mx-2" onclick="toggleTable('roomsTable')">Manage Rooms</button>
+            <button class="btn btn-primary mx-2" onclick="toggleTable('schoolYearsTable')">Manage School Years</button>
+            <button class="btn btn-primary mx-2" onclick="toggleTable('sectionsTable')">Manage Sections</button>
+        </div>
 
         <!-- Section Form -->
         <form action="/teachers/manage/saveSection" method="post" class="mb-4">
@@ -76,6 +84,87 @@
             </div>
             <button type="submit" class="btn btn-primary">Add Room</button>
         </form>
+
+        <!-- Rooms Table -->
+        <div id="roomsTable" class="mt-4 d-none">
+            <h3 class="text-center">Rooms</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Room Name</th>
+                        <th>Lab Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="room : ${rooms}">
+                        <td th:text="${room.name}"></td>
+                        <td th:text="${room.labType != null ? room.labType : 'None'}"></td>
+                        <td>
+                            <a th:href="@{/teachers/manage/editRoom(id=${room.id})}" class="btn btn-warning btn-sm">Edit</a>
+                            <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to archive this room?');">Archive</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- School Years Table -->
+        <div id="schoolYearsTable" class="mt-4 d-none">
+            <h3 class="text-center">School Years</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>School Year</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="schoolYear : ${schoolYears}">
+                        <td th:text="${schoolYear.year}"></td>
+                        <td>
+                            <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}" class="btn btn-warning btn-sm">Edit</a>
+                            <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sections Table -->
+        <div id="sectionsTable" class="mt-4 d-none">
+            <h3 class="text-center">Sections</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Section Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="section : ${sections}">
+                        <td th:text="${section.name}"></td>
+                        <td>
+                            <a th:href="@{/teachers/manage/editSection(id=${section.id})}" class="btn btn-warning btn-sm">Edit</a>
+                            <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to archive this section?');">Archive</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <script>
+        function toggleTable(tableId) {
+            const tables = ['roomsTable', 'schoolYearsTable', 'sectionsTable'];
+            tables.forEach(id => {
+                document.getElementById(id).classList.add('d-none');
+            });
+            document.getElementById(tableId).classList.remove('d-none');
+        }
+    </script>
 </body>
 </html>

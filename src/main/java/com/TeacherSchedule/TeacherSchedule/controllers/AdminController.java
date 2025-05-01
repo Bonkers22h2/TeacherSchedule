@@ -5,6 +5,7 @@ import com.TeacherSchedule.TeacherSchedule.models.Attendance;
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.models.Room;
+import com.TeacherSchedule.TeacherSchedule.models.ArchivedSchedule;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
@@ -12,6 +13,7 @@ import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedTeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.AttendanceRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedScheduleRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -57,6 +59,9 @@ public class AdminController {
 
     @Autowired
     private ScheduleService scheduleService;
+
+    @Autowired
+    private ArchivedScheduleRepository archivedScheduleRepository;
 
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
@@ -526,6 +531,102 @@ public class AdminController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "An unexpected error occurred: " + e.getMessage());
         }
+        return "redirect:/teachers/allSchedules";
+    }
+
+    @PostMapping("/archiveSchedules")
+    public String archiveAllSchedules(HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        List<Schedule> schedules = scheduleService.getAllSchedules();
+        if (schedules.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "No schedules available to archive.");
+            return "redirect:/teachers/allSchedules";
+        }
+
+        for (Schedule schedule : schedules) {
+            ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
+            archivedScheduleRepository.save(archivedSchedule);
+            scheduleService.deleteSchedule(schedule.getId());
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "All schedules have been archived.");
+        return "redirect:/teachers/allSchedules";
+    }
+
+    @GetMapping("/archivedSchedules")
+    public String showArchivedSchedules(Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        List<ArchivedSchedule> archivedSchedules = archivedScheduleRepository.findAll();
+        model.addAttribute("archivedSchedules", archivedSchedules);
+        return "admin/archivedSchedules";
+    }
+
+    @GetMapping("/editSchedule")
+    public String showEditScheduleForm(@RequestParam("id") Long id, Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        Schedule schedule = scheduleService.getAllSchedules().stream()
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+
+        if (schedule == null) {
+            model.addAttribute("errorMessage", "Schedule not found.");
+            return "redirect:/teachers/allSchedules";
+        }
+
+        model.addAttribute("schedule", schedule);
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll());
+        return "admin/editSchedule";
+    }
+
+    @PostMapping("/editSchedule")
+    public String updateSchedule(@ModelAttribute Schedule schedule, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        try {
+            scheduleService.saveScheduleWithSubSubjects(schedule.getSection(), schedule.getSchoolYear(), schedule.getRoom(), schedule.getGradeLevel());
+            redirectAttributes.addFlashAttribute("successMessage", "Schedule updated successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update schedule: " + e.getMessage());
+        }
+
+        return "redirect:/teachers/allSchedules";
+    }
+
+    @GetMapping("/archiveSchedule")
+    public String archiveSchedule(@RequestParam("id") Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        Schedule schedule = scheduleService.getAllSchedules().stream()
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+
+        if (schedule == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Schedule not found.");
+            return "redirect:/teachers/allSchedules";
+        }
+
+        ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
+        archivedScheduleRepository.save(archivedSchedule);
+        scheduleService.deleteSchedule(id);
+
+        redirectAttributes.addFlashAttribute("successMessage", "Schedule archived successfully.");
         return "redirect:/teachers/allSchedules";
     }
 

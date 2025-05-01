@@ -10,7 +10,7 @@
     <style>
         /* Custom Styles */
         body {
-            background-color: #038a73;
+            background-color: #00ffcc   ;
             /* Darker shade of green */
             min-height: 100vh;
             max-height: 1200px;
@@ -22,20 +22,8 @@
             position: relative;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.3);
-            /* Semi-transparent black overlay */
-            z-index: -1;
-        }
-
         .container {
-            background-color: #ffffffce;
+            background-color: #ffffff;
             border-radius: 8px;
             padding: 30px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -121,7 +109,7 @@
 
             <!-- Dropdown for Rooms -->
             <div class="col-md-3">
-                <label for="room" class="form-label">Select Room</label>
+                <label for="room" class="form-label">Available Room</label>
                 <select name="room" id="room" class="form-select" form="generateForm" required>
                     <option th:each="room : ${rooms}" th:value="${room.name}" th:text="${room.name}" th:selected="${selectedRoom == room.name}">
                     </option>

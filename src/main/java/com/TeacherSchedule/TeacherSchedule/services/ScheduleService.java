@@ -386,6 +386,10 @@ public class ScheduleService {
         int minutes = Integer.parseInt(parts[1]);
         return hours * 60 + minutes;
     }
+
+    public void deleteSchedule(Long id) {
+        scheduleRepository.deleteById(id);
+    }
 }
 
 class Class {

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit School Year</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container mt-5">
+        <h2>Edit School Year</h2>
+        <form th:action="@{/teachers/manage/editSchoolYear}" th:object="${schoolYear}" method="post">
+            <input type="hidden" th:field="*{id}" />
+            <div class="mb-3">
+                <label for="year" class="form-label">School Year</label>
+                <input type="text" id="year" th:field="*{year}" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a th:href="@{/teachers/manage}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>
