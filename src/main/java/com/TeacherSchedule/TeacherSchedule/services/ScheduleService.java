@@ -272,6 +272,10 @@ public class ScheduleService {
         }
     }
 
+    public List<Schedule> getSchedulesByTeacher(Teacher teacher) {
+        return scheduleRepository.findByTeacher(teacher);
+    }
+
     public void autoAssignTeachers(String section, String schoolYear, String gradeLevel) {
         List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
         if (schedules.isEmpty()) {
