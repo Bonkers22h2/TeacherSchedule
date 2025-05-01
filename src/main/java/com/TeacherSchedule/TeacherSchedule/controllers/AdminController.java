@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +50,9 @@ public class AdminController {
 
     @Autowired
     private AttendanceRepository attendanceRepo;
+
+    @Autowired
+    private TeacherRepository teacherRepo;
 
     @Autowired
     private ScheduleService scheduleService;
@@ -365,12 +370,96 @@ public class AdminController {
     }
 
     @GetMapping("/attendance")
-    public String showAttendance(HttpSession session) {
-        if (!"admin".equals(session.getAttribute("role"))) {
-            return "redirect:/signin";
-        }
-        return "admin/attendance";
+    public String showTeacherList(HttpSession session, Model model) {
+    if (!"admin".equals(session.getAttribute("role"))) {
+        return "redirect:/signin";
     }
+
+    List<Teacher> teachers = repo.findAll();
+    if (teachers == null || teachers.isEmpty()) {
+        model.addAttribute("error", "No teachers found.");
+        model.addAttribute("teacherCount", 0);
+    } else {
+        model.addAttribute("teachers", teachers);
+        model.addAttribute("teacherCount", teachers.size());
+    }
+
+    LocalDate today = LocalDate.now();
+    LocalTime cutoffTime = LocalTime.of(8, 0);
+
+    // ---------- DAILY ATTENDANCE ----------
+    List<Attendance> todaysAttendance = attendanceRepo.findAll()
+        .stream()
+        .filter(a -> today.equals(a.getDate()))
+        .collect(Collectors.toList());
+
+    Set<Integer> presentTeacherIds = todaysAttendance.stream()
+        .map(Attendance::getTeacherId)
+        .collect(Collectors.toSet());
+
+    long teachersPresent = presentTeacherIds.size();
+
+    long teachersLate = todaysAttendance.stream()
+        .filter(a -> a.getTime().isAfter(cutoffTime))
+        .map(Attendance::getTeacherId)
+        .distinct()
+        .count();
+
+    List<Teacher> allTeachers = teacherRepo.findAll();
+    Set<Integer> allTeacherIds = allTeachers.stream()
+        .map(Teacher::getId)
+        .collect(Collectors.toSet());
+
+    long teachersAbsent = allTeacherIds.stream()
+        .filter(id -> !presentTeacherIds.contains(id))
+        .count();
+
+    model.addAttribute("teachersPresent", teachersPresent);
+    model.addAttribute("teachersLate", teachersLate);
+    model.addAttribute("teachersAbsent", teachersAbsent);
+
+    // ---------- MONTHLY ATTENDANCE ----------
+    YearMonth currentMonth = YearMonth.now();
+    LocalDate startOfMonth = currentMonth.atDay(1);
+    LocalDate endOfMonth = currentMonth.atEndOfMonth();
+
+    List<Attendance> monthlyAttendance = attendanceRepo.findAll()
+        .stream()
+        .filter(a -> !a.getDate().isBefore(startOfMonth) && !a.getDate().isAfter(endOfMonth))
+        .collect(Collectors.toList());
+
+    Map<LocalDate, List<Attendance>> attendanceByDate = monthlyAttendance.stream()
+        .collect(Collectors.groupingBy(Attendance::getDate));
+
+    long totalPresent = 0;
+    long totalLate = 0;
+    long totalAbsent = 0;
+
+    for (LocalDate date : attendanceByDate.keySet()) {
+        List<Attendance> dailyRecords = attendanceByDate.get(date);
+
+        Set<Integer> presentIds = dailyRecords.stream()
+            .map(Attendance::getTeacherId)
+            .collect(Collectors.toSet());
+
+        Set<Integer> lateIds = dailyRecords.stream()
+            .filter(a -> a.getTime().isAfter(cutoffTime))
+            .map(Attendance::getTeacherId)
+            .collect(Collectors.toSet());
+
+        totalPresent += presentIds.size();
+        totalLate += lateIds.size();
+        totalAbsent += allTeacherIds.stream()
+            .filter(id -> !presentIds.contains(id))
+            .count();
+    }
+
+    model.addAttribute("monthlyPresent", totalPresent);
+    model.addAttribute("monthlyLate", totalLate);
+    model.addAttribute("monthlyAbsent", totalAbsent);
+
+    return "admin/attendance";
+}
 
     @PostMapping("/autoAssignTeacher")
     public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,
