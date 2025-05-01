@@ -4,6 +4,7 @@ import com.TeacherSchedule.TeacherSchedule.models.ArchivedTeacher;
 import com.TeacherSchedule.TeacherSchedule.models.Attendance;
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
+import com.TeacherSchedule.TeacherSchedule.models.Room;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
@@ -234,10 +235,20 @@ public class AdminController {
             }
         }
 
+        // Fetch all rooms and filter out those already in the schedule or with lab_type not null/none
+        List<String> unavailableRooms = scheduleService.getAllSchedules().stream()
+                .map(Schedule::getRoom)
+                .filter(room -> room != null) // Ensure null values are ignored
+                .collect(Collectors.toList());
+        List<Room> availableRooms = roomRepository.findAll().stream()
+                .filter(room -> (room.getLabType() == null || room.getLabType().trim().equalsIgnoreCase("")) // Include only general rooms
+                        && !unavailableRooms.contains(room.getName())) // Exclude rooms already in the schedule
+                .collect(Collectors.toList());
+
         model.addAttribute("schedule", schedule);
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
-        model.addAttribute("rooms", roomRepository.findAll()); // Fetch from the "room" table
+        model.addAttribute("rooms", availableRooms); // Pass only available rooms
         model.addAttribute("selectedSection", selectedSection);
         model.addAttribute("selectedSchoolYear", selectedSchoolYear);
         model.addAttribute("selectedRoom", selectedRoom);
@@ -287,7 +298,7 @@ public class AdminController {
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section,
             @RequestParam("schoolYear") String schoolYear,
-            @RequestParam("room") String room,
+            @RequestParam("room") String room, // Ensure room is passed
             @RequestParam("gradeLevel") String gradeLevel,
             HttpSession session, Model model) {
         if (!"admin".equals(session.getAttribute("role"))) {
@@ -309,7 +320,7 @@ public class AdminController {
 
         try {
             // Use the updated method to save schedules with subsubjects
-            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);
+            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel); // Pass room to the service
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -512,6 +523,8 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMessage", "Lab rooms successfully assigned!");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "An unexpected error occurred: " + e.getMessage());
         }
         return "redirect:/teachers/allSchedules";
     }

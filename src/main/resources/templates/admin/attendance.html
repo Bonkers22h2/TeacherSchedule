@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<div th:replace="~{fragments/head :: head('Attendance')}"></div>
 
 <head>
   <meta charset="UTF-8" />
@@ -15,13 +16,28 @@
     }
 
     body {
+      background-color: #038a73;
+      /* Darker shade of green */
       min-height: 100vh;
       max-height: 1200px;
-      background-color: #05be99;
       background-image: url('/images/shapez.png');
       background-position: center;
       background-size: cover;
       backdrop-filter: blur(5px);
+      /* Add a dark overlay */
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
+      /* Semi-transparent black overlay */
+      z-index: -1;
     }
 
     h2,

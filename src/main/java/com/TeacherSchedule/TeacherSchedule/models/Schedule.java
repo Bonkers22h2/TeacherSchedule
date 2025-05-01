@@ -14,7 +14,7 @@ public class Schedule {
     private String subject;
     private String section;
     private String schoolYear;
-    private String room;
+    private String room; // Ensure this field exists and is mapped
     private String gradeLevel;
     private String subSubject;
     private String labRoom;

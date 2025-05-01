@@ -223,7 +223,7 @@ public class ScheduleService {
                 }
 
                 // Save the schedule with the lab room
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection, selectedSchoolYear, labRoom, selectedGradeLevel, subSubject));
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection, selectedSchoolYear, selectedRoom, selectedGradeLevel, subSubject));
             }
         }
     }
@@ -316,76 +316,48 @@ public class ScheduleService {
 
     public void autoAssignLabRooms(String section, String schoolYear, String gradeLevel) {
         List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
-        List<Room> availableRooms = roomRepository.findAll();
-
-        // Filter rooms with lab types
-        List<Room> labRooms = availableRooms.stream()
-                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty())
+        List<Room> labRooms = roomRepository.findAll().stream()
+                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty()) // Filter rooms with lab types
                 .collect(Collectors.toList());
 
         if (schedules.isEmpty() || labRooms.isEmpty()) {
             throw new IllegalStateException("No schedules or lab rooms available for assignment.");
         }
 
+        // Assign lab rooms to schedules
         for (Schedule schedule : schedules) {
-            for (Room room : labRooms) {
-                if (isLabRoomAvailable(schedule, room)) {
-                    schedule.setLabRoom(room.getName());
+            if (schedule.getSubSubject() != null) { // Only assign lab rooms for schedules with sub_subject
+                Room assignedRoom = findAvailableLabRoom(schedule, labRooms);
+                if (assignedRoom != null) {
+                    schedule.setLabRoom(assignedRoom.getName());
                     scheduleRepository.save(schedule); // Save the updated schedule
-                    break; // Assign only one lab room per schedule
                 }
             }
         }
     }
 
-    private boolean isLabRoomAvailable(Schedule schedule, Room room) {
-        // Check if the room's lab type matches the subject's lab requirement
-        if (!isLabTypeCompatible(schedule.getSubject(), room.getLabType())) {
-            return false;
-        }
-
-        // Check for time slot conflicts
-        List<Schedule> conflictingSchedules = getAllSchedules().stream()
-                .filter(s -> room.getName().equals(s.getLabRoom()) &&
-                        overlaps(s.getTimeSlot(), schedule.getTimeSlot()))
-                .collect(Collectors.toList());
-
-        return conflictingSchedules.isEmpty();
-    }
-
-    private boolean isLabTypeCompatible(String subject, String labType) {
-        if (subject == null || labType == null) {
-            return false;
-        }
-
-        // Handle TLE subsubjects
-        if (subject.startsWith("TLE - ")) {
-            String subSubject = subject.substring(6); // Extract subsubject after "TLE - "
-            switch (subSubject) {
-                case "ICT":
-                    return labType.equalsIgnoreCase("ICT");
-                case "Home Economics":
-                    return labType.equalsIgnoreCase("Home Economics");
-                case "Agriculture":
-                    return labType.equalsIgnoreCase("Agriculture");
-                default:
-                    return false;
+    private Room findAvailableLabRoom(Schedule schedule, List<Room> labRooms) {
+        for (Room room : labRooms) {
+            // Check if the room's lab type matches the schedule's sub_subject
+            if (isLabTypeCompatible(schedule.getSubSubject(), room.getLabType())) {
+                // Check for time slot conflicts
+                boolean isAvailable = getAllSchedules().stream()
+                        .noneMatch(s -> room.getName().equals(s.getLabRoom()) &&
+                                overlaps(s.getTimeSlot(), schedule.getTimeSlot()));
+                if (isAvailable) {
+                    return room; // Return the first available room
+                }
             }
         }
+        return null; // No available room found
+    }
 
-        // Handle other subjects
-        switch (subject) {
-            case "ICT":
-                return labType.equalsIgnoreCase("ICT");
-            case "Home Economics":
-                return labType.equalsIgnoreCase("Home Economics");
-            case "Agriculture":
-                return labType.equalsIgnoreCase("Agriculture");
-            case "Science":
-                return labType.equalsIgnoreCase("Science");
-            default:
-                return false;
+    private boolean isLabTypeCompatible(String subSubject, String labType) {
+        if (subSubject == null || labType == null) {
+            return false;
         }
+        // Match the sub_subject with the lab_type
+        return subSubject.equalsIgnoreCase(labType);
     }
 
     private boolean overlaps(String timeSlot1, String timeSlot2) {
