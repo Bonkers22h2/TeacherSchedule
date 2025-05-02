@@ -165,13 +165,14 @@ public class AdminController {
 
     // Handle form submission
     @PostMapping("/add")
-    public String addTeacher(@ModelAttribute Teacher teacher, HttpSession session) {
+    public String addTeacher(@ModelAttribute Teacher teacher, HttpSession session, RedirectAttributes redirectAttributes) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         teacher.setCreatedAt(LocalDate.now());
         repo.save(teacher);
+        redirectAttributes.addFlashAttribute("successMessage", "Teacher successfully added.");
         return "redirect:/teachers";
     }
 
@@ -201,14 +202,22 @@ public class AdminController {
     }
 
     @GetMapping("/archive")
-    public String archiveTeacher(@RequestParam("id") int id, HttpSession session) {
+    public String archiveTeacher(@RequestParam("id") int id, HttpSession session, RedirectAttributes redirectAttributes) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         Teacher teacher = repo.findById(id).orElse(null);
         if (teacher == null) {
-            throw new IllegalArgumentException("Teacher not found");
+            redirectAttributes.addFlashAttribute("errorMessage", "Teacher not found.");
+            return "redirect:/teachers";
+        }
+
+        // Check if the teacher is assigned to any schedules
+        boolean isAssignedToSchedule = scheduleService.getSchedulesByTeacher(teacher).size() > 0;
+        if (isAssignedToSchedule) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Cannot archive teacher. This teacher is assigned to one or more classes.");
+            return "redirect:/teachers";
         }
 
         // Save teacher to archived_teachers table
@@ -218,6 +227,7 @@ public class AdminController {
         // Delete teacher from the main table
         repo.deleteById(id);
 
+        redirectAttributes.addFlashAttribute("successMessage", "Teacher archived successfully.");
         return "redirect:/teachers";
     }
 

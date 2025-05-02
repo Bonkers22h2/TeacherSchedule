@@ -12,10 +12,12 @@ import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedRoomRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedSectionRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedSchoolYearRepository;
+import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/teachers/manage")
@@ -38,6 +40,9 @@ public class ManageController {
 
     @Autowired
     private ArchivedSchoolYearRepository archivedSchoolYearRepository;
+
+    @Autowired
+    private ScheduleService scheduleService; // Inject ScheduleService
 
     @GetMapping
     public String showManagePage(Model model) {
@@ -90,11 +95,20 @@ public class ManageController {
     }
 
     @GetMapping("/archiveRoom")
-    public String archiveRoom(@RequestParam("id") Long id) {
+    public String archiveRoom(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         Room room = roomRepository.findById(id).orElse(null);
         if (room != null) {
+            // Check if the room or lab room is referenced in the schedules table
+            boolean isReferenced = scheduleService.getAllSchedules().stream()
+                    .anyMatch(schedule -> room.getName().equals(schedule.getRoom()) || room.getName().equals(schedule.getLabRoom()));
+            if (isReferenced) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Cannot archive room. It is currently in use in the schedules.");
+                return "redirect:/teachers/manage";
+            }
+
             archivedRoomRepository.save(new ArchivedRoom(room));
             roomRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Room archived successfully.");
         }
         return "redirect:/teachers/manage";
     }
@@ -117,11 +131,20 @@ public class ManageController {
     }
 
     @GetMapping("/archiveSchoolYear")
-    public String archiveSchoolYear(@RequestParam("id") Long id) {
+    public String archiveSchoolYear(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         SchoolYear schoolYear = schoolYearRepository.findById(id).orElse(null);
         if (schoolYear != null) {
+            // Check if the school year is referenced in the schedules table
+            boolean isReferenced = scheduleService.getAllSchedules().stream()
+                    .anyMatch(schedule -> schoolYear.getYear().equals(schedule.getSchoolYear()));
+            if (isReferenced) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Cannot archive school year. It is currently in use in the schedules.");
+                return "redirect:/teachers/manage";
+            }
+
             archivedSchoolYearRepository.save(new ArchivedSchoolYear(schoolYear));
             schoolYearRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "School year archived successfully.");
         }
         return "redirect:/teachers/manage";
     }
@@ -144,11 +167,20 @@ public class ManageController {
     }
 
     @GetMapping("/archiveSection")
-    public String archiveSection(@RequestParam("id") Long id) {
+    public String archiveSection(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         Section section = sectionRepository.findById(id).orElse(null);
         if (section != null) {
+            // Check if the section is referenced in the schedules table
+            boolean isReferenced = scheduleService.getAllSchedules().stream()
+                    .anyMatch(schedule -> section.getName().equals(schedule.getSection()));
+            if (isReferenced) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Cannot archive section. It is currently in use in the schedules.");
+                return "redirect:/teachers/manage";
+            }
+
             archivedSectionRepository.save(new ArchivedSection(section));
             sectionRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Section archived successfully.");
         }
         return "redirect:/teachers/manage";
     }

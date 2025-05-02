@@ -203,6 +203,10 @@ public class ScheduleService {
                     subject += " - " + subSubject; // Append subsubject to the subject
                 }
 
+                if ("Science".equals(subject)) {
+                    subSubject = "Science";
+                }
+
                 // Assign laboratory room based on subject
                 String labRoom = null;
                 if (subSubject != null) {
@@ -220,6 +224,11 @@ public class ScheduleService {
                             labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName).orElse("Default Science Lab");
                             break;
                     }
+                }
+
+                if ("Science".equals(subject)) {
+                    // Directly assign a science lab room for Science
+                    labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName).orElse("Default Science Lab");
                 }
 
                 // Save the schedule with the lab room
@@ -326,20 +335,28 @@ public class ScheduleService {
 
         // Assign lab rooms to schedules
         for (Schedule schedule : schedules) {
-            if (schedule.getSubSubject() != null) { // Only assign lab rooms for schedules with sub_subject
-                Room assignedRoom = findAvailableLabRoom(schedule, labRooms);
-                if (assignedRoom != null) {
-                    schedule.setLabRoom(assignedRoom.getName());
-                    scheduleRepository.save(schedule); // Save the updated schedule
-                }
+            String subject = schedule.getSubject();
+            Room assignedRoom = null;
+
+            if ("Science".equals(subject)) {
+                // Directly assign a science lab room for Science
+                assignedRoom = findAvailableLabRoom(schedule, labRooms, "Science");
+            } else if (schedule.getSubSubject() != null) {
+                // Assign lab rooms for schedules with sub_subject
+                assignedRoom = findAvailableLabRoom(schedule, labRooms, schedule.getSubSubject());
+            }
+
+            if (assignedRoom != null) {
+                schedule.setLabRoom(assignedRoom.getName());
+                scheduleRepository.save(schedule); // Save the updated schedule
             }
         }
     }
 
-    private Room findAvailableLabRoom(Schedule schedule, List<Room> labRooms) {
+    private Room findAvailableLabRoom(Schedule schedule, List<Room> labRooms, String labType) {
         for (Room room : labRooms) {
-            // Check if the room's lab type matches the schedule's sub_subject
-            if (isLabTypeCompatible(schedule.getSubSubject(), room.getLabType())) {
+            // Check if the room's lab type matches the provided labType
+            if (labType.equalsIgnoreCase(room.getLabType())) {
                 // Check for time slot conflicts
                 boolean isAvailable = getAllSchedules().stream()
                         .noneMatch(s -> room.getName().equals(s.getLabRoom()) &&
@@ -350,14 +367,6 @@ public class ScheduleService {
             }
         }
         return null; // No available room found
-    }
-
-    private boolean isLabTypeCompatible(String subSubject, String labType) {
-        if (subSubject == null || labType == null) {
-            return false;
-        }
-        // Match the sub_subject with the lab_type
-        return subSubject.equalsIgnoreCase(labType);
     }
 
     private boolean overlaps(String timeSlot1, String timeSlot2) {

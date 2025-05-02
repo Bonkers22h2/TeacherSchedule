@@ -8,7 +8,7 @@
             /* Darker shade of green */
             min-height: 100vh;
             max-height: 1200px;
-            background-image: url('/images/shapez.png');
+            background-image: url('/images/4931029.jpg');
             background-position: center;
             background-size: cover;
             backdrop-filter: blur(5px);
@@ -53,7 +53,7 @@
                 <input type="text" id="section" name="section" class="form-control" placeholder="Enter section name"
                     required>
             </div>
-            <button type="submit" class="btn btn-primary">Save Section</button>
+            <button type="submit" class="btn btn-primary" onclick="showSuccessMessage('Section added successfully!')">Save Section</button>
         </form>
 
         <!-- School Year Form -->
@@ -63,7 +63,7 @@
                 <input type="text" id="schoolYear" name="schoolYear" class="form-control"
                     placeholder="Enter school year (e.g., 2023-2024)" required>
             </div>
-            <button type="submit" class="btn btn-primary">Save School Year</button>
+            <button type="submit" class="btn btn-primary" onclick="showSuccessMessage('School Year added successfully!')">Save School Year</button>
         </form>
 
         <!-- Room Form -->
@@ -82,7 +82,7 @@
                     <option value="Science">Science Lab</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Add Room</button>
+            <button type="submit" class="btn btn-primary" onclick="showSuccessMessage('Room added successfully!')">Add Room</button>
         </form>
 
         <!-- Rooms Table -->
@@ -164,6 +164,10 @@
                 document.getElementById(id).classList.add('d-none');
             });
             document.getElementById(tableId).classList.remove('d-none');
+        }
+
+        function showSuccessMessage(message) {
+            alert(message); // Temporary success message display
         }
     </script>
 </body>

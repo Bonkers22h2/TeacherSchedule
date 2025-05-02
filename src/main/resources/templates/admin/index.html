@@ -15,10 +15,9 @@
             background-color: #00ffcc; /* Darker shade of green */
             min-height: 100vh;
             max-height: 1200px;
-            background-image: url('/images/shapez.png');
+            background-image: url('/images/4931029.jpg');
             background-position: center;
             background-size: cover;
-            backdrop-filter: blur(5px);
         }
 
     </style>
@@ -26,6 +25,30 @@
 
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- Success/Error Messages -->
+    <div class="position-fixed top-50 start-50 translate-middle" style="z-index: 1050; width: 50%;">
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+    </div>
+
+    <!-- JavaScript to auto-dismiss alerts -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const alerts = document.querySelectorAll(".alert");
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.remove("show");
+                    alert.classList.add("fade");
+                }, 3000); // 5 seconds
+            });
+        });
+    </script>
+
     <!-- Welcome chuchu -->
      
     <div class="d-flex flex-column align-items-center" style="padding-top: 5vh;">
