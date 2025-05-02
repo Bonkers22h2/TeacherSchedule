@@ -23,6 +23,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border: #333 solid 3px;
         }
+
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
 </style>
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -53,7 +58,7 @@
                 <input type="text" id="section" name="section" class="form-control" placeholder="Enter section name"
                     required>
             </div>
-            <button type="submit" class="btn btn-primary" onclick="showSuccessMessage('Section added successfully!')">Save Section</button>
+            <button type="submit" class="btn btn-primary">Save Section</button>
         </form>
 
         <!-- School Year Form -->
@@ -63,7 +68,7 @@
                 <input type="text" id="schoolYear" name="schoolYear" class="form-control"
                     placeholder="Enter school year (e.g., 2023-2024)" required>
             </div>
-            <button type="submit" class="btn btn-primary" onclick="showSuccessMessage('School Year added successfully!')">Save School Year</button>
+            <button type="submit" class="btn btn-primary">Save School Year</button>
         </form>
 
         <!-- Room Form -->
@@ -82,78 +87,84 @@
                     <option value="Science">Science Lab</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary" onclick="showSuccessMessage('Room added successfully!')">Add Room</button>
+            <button type="submit" class="btn btn-primary">Add Room</button>
         </form>
 
         <!-- Rooms Table -->
         <div id="roomsTable" class="mt-4 d-none">
             <h3 class="text-center">Rooms</h3>
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Room Name</th>
-                        <th>Lab Type</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="room : ${rooms}">
-                        <td th:text="${room.name}"></td>
-                        <td th:text="${room.labType != null ? room.labType : 'None'}"></td>
-                        <td>
-                            <a th:href="@{/teachers/manage/editRoom(id=${room.id})}" class="btn btn-warning btn-sm">Edit</a>
-                            <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}" class="btn btn-danger btn-sm"
-                               onclick="return confirm('Are you sure you want to archive this room?');">Archive</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Room Name</th>
+                            <th>Lab Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="room : ${rooms}">
+                            <td th:text="${room.name}"></td>
+                            <td th:text="${room.labType != null ? room.labType : 'None'}"></td>
+                            <td>
+                                <a th:href="@{/teachers/manage/editRoom(id=${room.id})}" class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to archive this room?');">Archive</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- School Years Table -->
         <div id="schoolYearsTable" class="mt-4 d-none">
             <h3 class="text-center">School Years</h3>
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>School Year</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="schoolYear : ${schoolYears}">
-                        <td th:text="${schoolYear.year}"></td>
-                        <td>
-                            <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}" class="btn btn-warning btn-sm">Edit</a>
-                            <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}" class="btn btn-danger btn-sm"
-                               onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>School Year</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="schoolYear : ${schoolYears}">
+                            <td th:text="${schoolYear.year}"></td>
+                            <td>
+                                <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}" class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Sections Table -->
         <div id="sectionsTable" class="mt-4 d-none">
             <h3 class="text-center">Sections</h3>
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Section Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="section : ${sections}">
-                        <td th:text="${section.name}"></td>
-                        <td>
-                            <a th:href="@{/teachers/manage/editSection(id=${section.id})}" class="btn btn-warning btn-sm">Edit</a>
-                            <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}" class="btn btn-danger btn-sm"
-                               onclick="return confirm('Are you sure you want to archive this section?');">Archive</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Section Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="section : ${sections}">
+                            <td th:text="${section.name}"></td>
+                            <td>
+                                <a th:href="@{/teachers/manage/editSection(id=${section.id})}" class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Are you sure you want to archive this section?');">Archive</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

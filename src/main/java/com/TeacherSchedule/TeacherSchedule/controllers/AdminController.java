@@ -6,6 +6,7 @@ import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.models.Room;
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedSchedule;
+import com.TeacherSchedule.TeacherSchedule.models.Section;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
@@ -220,14 +221,28 @@ public class AdminController {
             return "redirect:/teachers";
         }
 
-        // Save teacher to archived_teachers table
-        ArchivedTeacher archivedTeacher = new ArchivedTeacher(teacher);
-        archivedTeacherRepository.save(archivedTeacher);
+        try {
+            // Remove references to the teacher in archived_schedules
+            List<ArchivedSchedule> archivedSchedules = archivedScheduleRepository.findAll().stream()
+                .filter(schedule -> schedule.getTeacher() != null && schedule.getTeacher().getId() == id)
+                .collect(Collectors.toList());
+            for (ArchivedSchedule archivedSchedule : archivedSchedules) {
+                archivedSchedule.setTeacher(null); // Remove the reference
+                archivedScheduleRepository.save(archivedSchedule);
+            }
 
-        // Delete teacher from the main table
-        repo.deleteById(id);
+            // Save teacher to archived_teachers table
+            ArchivedTeacher archivedTeacher = new ArchivedTeacher(teacher);
+            archivedTeacherRepository.save(archivedTeacher);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Teacher archived successfully.");
+            // Delete teacher from the main table
+            repo.deleteById(id);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Teacher archived successfully.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to archive teacher: " + e.getMessage());
+        }
+
         return "redirect:/teachers";
     }
 
@@ -250,6 +265,15 @@ public class AdminController {
             }
         }
 
+        // Fetch all sections and filter out those already in the schedule
+        List<String> unavailableSections = scheduleService.getAllSchedules().stream()
+                .map(Schedule::getSection)
+                .filter(section -> section != null) // Ensure null values are ignored
+                .collect(Collectors.toList());
+        List<Section> availableSections = sectionRepository.findAll().stream()
+                .filter(section -> !unavailableSections.contains(section.getName())) // Exclude sections already in the schedule
+                .collect(Collectors.toList());
+
         // Fetch all rooms and filter out those already in the schedule or with lab_type not null/none
         List<String> unavailableRooms = scheduleService.getAllSchedules().stream()
                 .map(Schedule::getRoom)
@@ -261,7 +285,7 @@ public class AdminController {
                 .collect(Collectors.toList());
 
         model.addAttribute("schedule", schedule);
-        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("sections", availableSections); // Pass only available sections
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("rooms", availableRooms); // Pass only available rooms
         model.addAttribute("selectedSection", selectedSection);

@@ -53,27 +53,42 @@ public class ManageController {
     }
 
     @PostMapping("/saveSection")
-    public String saveSection(@RequestParam String section) {
+    public String saveSection(@RequestParam String section, RedirectAttributes redirectAttributes) {
+        if (sectionRepository.findAll().stream().anyMatch(s -> s.getName().equalsIgnoreCase(section))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Section already exists.");
+            return "redirect:/teachers/manage";
+        }
         Section newSection = new Section();
         newSection.setName(section);
         sectionRepository.save(newSection); // Save the section to the database
+        redirectAttributes.addFlashAttribute("successMessage", "Section added successfully.");
         return "redirect:/teachers/manage";
     }
 
     @PostMapping("/saveSchoolYear")
-    public String saveSchoolYear(@RequestParam String schoolYear) {
+    public String saveSchoolYear(@RequestParam String schoolYear, RedirectAttributes redirectAttributes) {
+        if (schoolYearRepository.findAll().stream().anyMatch(sy -> sy.getYear().equalsIgnoreCase(schoolYear))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "School Year already exists.");
+            return "redirect:/teachers/manage";
+        }
         SchoolYear newSchoolYear = new SchoolYear();
         newSchoolYear.setYear(schoolYear);
         schoolYearRepository.save(newSchoolYear); // Save the school year to the database
+        redirectAttributes.addFlashAttribute("successMessage", "School Year added successfully.");
         return "redirect:/teachers/manage";
     }
 
     @PostMapping("/saveRoom")
-    public String saveRoom(@RequestParam String room, @RequestParam(required = false) String labType) {
+    public String saveRoom(@RequestParam String room, @RequestParam(required = false) String labType, RedirectAttributes redirectAttributes) {
+        if (roomRepository.findAll().stream().anyMatch(r -> r.getName().equalsIgnoreCase(room))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Room already exists.");
+            return "redirect:/teachers/manage";
+        }
         Room newRoom = new Room();
         newRoom.setName(room);
         newRoom.setLabType(labType); // Save the lab type if provided
         roomRepository.save(newRoom); // Save the room to the database
+        redirectAttributes.addFlashAttribute("successMessage", "Room added successfully.");
         return "redirect:/teachers/manage";
     }
 
