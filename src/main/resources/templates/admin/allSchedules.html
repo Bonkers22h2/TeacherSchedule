@@ -173,7 +173,7 @@
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.section}"></td>
-                    <td>Room 1</td> <!-- Static Room 1 -->
+                    <td th:text="${schedule.room != null ? schedule.room : 'No Assigned Room'}"></td> <!-- Dynamically display room -->
                     <td th:text="${schedule.labRoom != null ? schedule.labRoom : 'No Assigned Lab Room'}"></td> <!-- Lab Room -->
                     <td th:text="${schedule.schoolYear}"></td>
                     <td th:text="${schedule.gradeLevel}"></td>

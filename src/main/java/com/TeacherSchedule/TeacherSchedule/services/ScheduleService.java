@@ -291,25 +291,48 @@ public class ScheduleService {
             throw new IllegalStateException("No schedules found for the selected filters.");
         }
 
+        Set<Integer> assignedHomeroomTeachers = scheduleRepository.findAll().stream()
+            .filter(schedule -> "Homeroom".equals(schedule.getSubject()) && schedule.getTeacher() != null)
+            .map(schedule -> schedule.getTeacher().getId())
+            .collect(Collectors.toSet());
+
         for (Schedule schedule : schedules) {
             // Skip schedules that already have an assigned teacher
             if (schedule.getTeacher() != null) {
                 continue;
             }
 
-            List<Teacher> teachers = teacherRepository.findBySubjectsContaining(schedule.getSubject());
+            String subject = schedule.getSubject();
+            List<Teacher> teachers;
+
+            if ("Homeroom".equals(subject)) {
+                // For Homeroom, select any teacher from the selected grade level who is not already assigned
+                teachers = teacherRepository.findAll().stream()
+                    .filter(teacher -> teacher.getGradeLevels() != null &&
+                            List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check for exact match
+                    .filter(teacher -> !assignedHomeroomTeachers.contains(teacher.getId()))
+                    .collect(Collectors.toList());
+            } else {
+                // For other subjects, filter teachers by subject and grade level
+                if (subject.startsWith("TLE")) {
+                    subject = "TLE"; // Treat all TLE subjects as "TLE"
+                }
+                teachers = teacherRepository.findBySubjectsContaining(subject).stream()
+                    .filter(teacher -> teacher.getGradeLevels() != null &&
+                            List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check for exact match
+                    .collect(Collectors.toList());
+            }
+
             boolean teacherAssigned = false;
 
             for (Teacher teacher : teachers) {
-                // Ensure the teacher is assigned to the correct grade level
-                if (!teacher.getGradeLevels().contains(gradeLevel)) {
-                    continue;
-                }
-
                 // Check if the teacher is already assigned to a schedule at the same time slot
                 boolean conflict = scheduleRepository.existsByTimeSlotAndTeacher(schedule.getTimeSlot(), teacher);
                 if (!conflict) {
                     schedule.setTeacher(teacher); // Assign the teacher if no conflict
+                    if ("Homeroom".equals(subject)) {
+                        assignedHomeroomTeachers.add(teacher.getId()); // Mark the teacher as assigned for Homeroom
+                    }
                     teacherAssigned = true;
                     break;
                 }
