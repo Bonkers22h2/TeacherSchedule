@@ -4,6 +4,7 @@ import com.TeacherSchedule.TeacherSchedule.models.ArchivedTeacher;
 import com.TeacherSchedule.TeacherSchedule.models.Attendance;
 import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
+import com.TeacherSchedule.TeacherSchedule.models.TeacherStatusDTO;
 import com.TeacherSchedule.TeacherSchedule.models.Room;
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedSchedule;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
@@ -24,12 +25,16 @@ import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -387,6 +392,7 @@ public class AdminController {
             schedules = scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel);
         }
 
+        
         model.addAttribute("schedules", schedules);
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
@@ -410,19 +416,20 @@ public class AdminController {
         return new String();
     }
 
-    @GetMapping("/attendance")
-    public String showTeacherList(HttpSession session, Model model) {
+@GetMapping("/attendance")
+public String showTeacherList(HttpSession session, Model model) {
     if (!"admin".equals(session.getAttribute("role"))) {
         return "redirect:/signin";
     }
 
-    List<Teacher> teachers = repo.findAll();
-    if (teachers == null || teachers.isEmpty()) {
+    // Load all teachers
+    List<Teacher> allTeachers = teacherRepo.findAll();
+    if (allTeachers == null || allTeachers.isEmpty()) {
         model.addAttribute("error", "No teachers found.");
         model.addAttribute("teacherCount", 0);
+        return "admin/attendance";
     } else {
-        model.addAttribute("teachers", teachers);
-        model.addAttribute("teacherCount", teachers.size());
+        model.addAttribute("teacherCount", allTeachers.size());
     }
 
     LocalDate today = LocalDate.now();
@@ -446,7 +453,6 @@ public class AdminController {
         .distinct()
         .count();
 
-    List<Teacher> allTeachers = teacherRepo.findAll();
     Set<Integer> allTeacherIds = allTeachers.stream()
         .map(Teacher::getId)
         .collect(Collectors.toSet());
@@ -455,9 +461,23 @@ public class AdminController {
         .filter(id -> !presentTeacherIds.contains(id))
         .count();
 
-    model.addAttribute("teachersPresent", teachersPresent);
-    model.addAttribute("teachersLate", teachersLate);
-    model.addAttribute("teachersAbsent", teachersAbsent);
+    // Make teacherStatuses (Present, Late, Absent)
+    List<TeacherStatusDTO> teacherStatuses = new ArrayList<>();
+    for (Teacher teacher : allTeachers) {
+        Optional<Attendance> attendance = todaysAttendance.stream()
+            .filter(a -> a.getTeacherId() == teacher.getId())
+            .findFirst();
+
+        if (attendance.isPresent()) {
+            if (attendance.get().getTime().isAfter(cutoffTime)) {
+                teacherStatuses.add(new TeacherStatusDTO(teacher, "Late"));
+            } else {
+                teacherStatuses.add(new TeacherStatusDTO(teacher, "Present"));
+            }
+        } else {
+            teacherStatuses.add(new TeacherStatusDTO(teacher, "Absent"));
+        }
+    }
 
     // ---------- MONTHLY ATTENDANCE ----------
     YearMonth currentMonth = YearMonth.now();
@@ -495,12 +515,22 @@ public class AdminController {
             .count();
     }
 
+    // Models
+    Map<String, Integer> statusOrder = Map.of("Present", 1, "Late", 2, "Absent", 3);
+    teacherStatuses.sort(Comparator.comparing(ts -> statusOrder.getOrDefault(ts.getStatus(), 99)));
+    model.addAttribute("teacherStatuses", teacherStatuses);
+    model.addAttribute("teachersPresent", teachersPresent);
+    model.addAttribute("teachersLate", teachersLate);
+    model.addAttribute("teachersAbsent", teachersAbsent);
     model.addAttribute("monthlyPresent", totalPresent);
     model.addAttribute("monthlyLate", totalLate);
     model.addAttribute("monthlyAbsent", totalAbsent);
+    model.addAttribute("today", today);
+
 
     return "admin/attendance";
 }
+
 
     @PostMapping("/autoAssignTeacher")
     public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,
