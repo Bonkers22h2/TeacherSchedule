@@ -223,6 +223,9 @@ public class ScheduleService {
                         case "Science":
                             labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName).orElse("Default Science Lab");
                             break;
+                        case "Industrial Arts":
+                            labRoom = roomRepository.findFirstByLabType("Industrial Arts").map(Room::getName).orElse("Default Industrial Arts Lab");
+                            break;
                     }
                 }
 
