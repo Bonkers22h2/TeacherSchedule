@@ -342,34 +342,28 @@ public class AdminController {
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section,
             @RequestParam("schoolYear") String schoolYear,
-            @RequestParam("room") String room, // Ensure room is passed
+            @RequestParam("room") String room,
             @RequestParam("gradeLevel") String gradeLevel,
-            HttpSession session, Model model) {
+            HttpSession session, RedirectAttributes redirectAttributes) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
 
         try {
-            // Generate a schedule if it doesn't already exist
-            if (scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel).isEmpty()) {
-                scheduleService.generateSchedule(section, schoolYear, gradeLevel);
-            }
+            // Save the schedule
+            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);
 
-            // Save the generated schedule
-            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel); // Pass room to the service
-            model.addAttribute("successMessage", "Schedule successfully generated and saved.");
+            // Automatically generate one schedule after saving
+            scheduleService.generateSchedule(section, schoolYear, gradeLevel);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Schedule saved and one schedule automatically generated.");
         } catch (IllegalStateException e) {
-            model.addAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "An unexpected error occurred: " + e.getMessage());
         }
 
-        model.addAttribute("sections", sectionRepository.findAll());
-        model.addAttribute("schoolYears", schoolYearRepository.findAll());
-        model.addAttribute("rooms", roomRepository.findAll());
-        model.addAttribute("selectedSection", section);
-        model.addAttribute("selectedSchoolYear", schoolYear);
-        model.addAttribute("selectedRoom", room);
-        model.addAttribute("selectedGradeLevel", gradeLevel); // Pass the selected grade level to the model
-        return "admin/schedule";
+        return "redirect:/teachers/schedule";
     }
 
     @GetMapping("/allSchedules")
