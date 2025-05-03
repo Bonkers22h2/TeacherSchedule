@@ -93,19 +93,37 @@ public class ManageController {
     }
 
     @GetMapping("/editRoom")
-    public String editRoom(@RequestParam("id") Long id, Model model) {
+    public String editRoom(@RequestParam("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Room room = roomRepository.findById(id).orElse(null);
         if (room == null) {
-            model.addAttribute("errorMessage", "Room not found.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Room not found.");
             return "redirect:/teachers/manage";
         }
+
+        // Check if the room is referenced in schedules
+        boolean isReferenced = scheduleService.getAllSchedules().stream()
+                .anyMatch(schedule -> room.getName().equals(schedule.getRoom()) || room.getName().equals(schedule.getLabRoom()));
+        if (isReferenced) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Edit unavailable. Room is currently in use in schedules.");
+            return "redirect:/teachers/manage";
+        }
+
         model.addAttribute("room", room);
-        return "admin/editRoom"; // Ensure this view exists
+        return "admin/editRoom";
     }
 
     @PostMapping("/editRoom")
-    public String updateRoom(@ModelAttribute Room room) {
+    public String updateRoom(@ModelAttribute Room room, RedirectAttributes redirectAttributes) {
+        // Check for duplicate room name
+        boolean isDuplicate = roomRepository.findAll().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase(room.getName()) && !r.getId().equals(room.getId()));
+        if (isDuplicate) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Edit unavailable. A room with the same name already exists.");
+            return "redirect:/teachers/manage";
+        }
+
         roomRepository.save(room);
+        redirectAttributes.addFlashAttribute("successMessage", "Room updated successfully.");
         return "redirect:/teachers/manage";
     }
 
@@ -129,19 +147,37 @@ public class ManageController {
     }
 
     @GetMapping("/editSchoolYear")
-    public String editSchoolYear(@RequestParam("id") Long id, Model model) {
+    public String editSchoolYear(@RequestParam("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         SchoolYear schoolYear = schoolYearRepository.findById(id).orElse(null);
         if (schoolYear == null) {
-            model.addAttribute("errorMessage", "School Year not found.");
+            redirectAttributes.addFlashAttribute("errorMessage", "School Year not found.");
             return "redirect:/teachers/manage";
         }
+
+        // Check if the school year is referenced in schedules
+        boolean isReferenced = scheduleService.getAllSchedules().stream()
+                .anyMatch(schedule -> schoolYear.getYear().equals(schedule.getSchoolYear()));
+        if (isReferenced) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Edit unavailable. School Year is currently in use in schedules.");
+            return "redirect:/teachers/manage";
+        }
+
         model.addAttribute("schoolYear", schoolYear);
-        return "admin/editSchoolYear"; // Ensure this view exists
+        return "admin/editSchoolYear";
     }
 
     @PostMapping("/editSchoolYear")
-    public String updateSchoolYear(@ModelAttribute SchoolYear schoolYear) {
+    public String updateSchoolYear(@ModelAttribute SchoolYear schoolYear, RedirectAttributes redirectAttributes) {
+        // Check for duplicate school year
+        boolean isDuplicate = schoolYearRepository.findAll().stream()
+                .anyMatch(sy -> sy.getYear().equalsIgnoreCase(schoolYear.getYear()) && !sy.getId().equals(schoolYear.getId()));
+        if (isDuplicate) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Edit unavailable. A school year with the same name already exists.");
+            return "redirect:/teachers/manage";
+        }
+
         schoolYearRepository.save(schoolYear);
+        redirectAttributes.addFlashAttribute("successMessage", "School Year updated successfully.");
         return "redirect:/teachers/manage";
     }
 
@@ -165,19 +201,37 @@ public class ManageController {
     }
 
     @GetMapping("/editSection")
-    public String editSection(@RequestParam("id") Long id, Model model) {
+    public String editSection(@RequestParam("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Section section = sectionRepository.findById(id).orElse(null);
         if (section == null) {
-            model.addAttribute("errorMessage", "Section not found.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Section not found.");
             return "redirect:/teachers/manage";
         }
+
+        // Check if the section is referenced in schedules
+        boolean isReferenced = scheduleService.getAllSchedules().stream()
+                .anyMatch(schedule -> section.getName().equals(schedule.getSection()));
+        if (isReferenced) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Edit unavailable. Section is currently in use in schedules.");
+            return "redirect:/teachers/manage";
+        }
+
         model.addAttribute("section", section);
-        return "admin/editSection"; // Ensure this view exists
+        return "admin/editSection";
     }
 
     @PostMapping("/editSection")
-    public String updateSection(@ModelAttribute Section section) {
+    public String updateSection(@ModelAttribute Section section, RedirectAttributes redirectAttributes) {
+        // Check for duplicate section name
+        boolean isDuplicate = sectionRepository.findAll().stream()
+                .anyMatch(s -> s.getName().equalsIgnoreCase(section.getName()) && !s.getId().equals(section.getId()));
+        if (isDuplicate) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Edit unavailable. A section with the same name already exists.");
+            return "redirect:/teachers/manage";
+        }
+
         sectionRepository.save(section);
+        redirectAttributes.addFlashAttribute("successMessage", "Section updated successfully.");
         return "redirect:/teachers/manage";
     }
 

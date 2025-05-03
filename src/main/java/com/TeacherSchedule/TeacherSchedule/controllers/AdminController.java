@@ -349,6 +349,16 @@ public class AdminController {
             return "redirect:/signin";
         }
 
+        // Validate that section and room are not empty
+        if (section == null || section.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Section is required to save the schedule.");
+            return "redirect:/teachers/schedule";
+        }
+        if (room == null || room.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Room is required to save the schedule.");
+            return "redirect:/teachers/schedule";
+        }
+
         try {
             // Save the schedule
             scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);

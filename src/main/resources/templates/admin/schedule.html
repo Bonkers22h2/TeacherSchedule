@@ -86,6 +86,11 @@
         <a href="/teachers" class="btn btn-success mb-3">Back</a>
         <a href="/teachers/allSchedules" class="btn btn-primary mb-3">View All Schedules</a>
 
+        <!-- Display Error Message -->
+        <div th:if="${error}" class="alert alert-danger text-center" role="alert">
+            <p th:text="${error}"></p>
+        </div>
+
         <div class="row mb-3">
             <!-- Dropdown for Section -->
             <div class="col-md-3">
@@ -154,11 +159,6 @@
                     <button type="submit" class="btn btn-success w-100">Save Schedule</button>
                 </form>
             </div>
-        </div>
-
-        <!-- Display Error Message -->
-        <div th:if="${error}" class="alert alert-danger" role="alert">
-            <p th:text="${error}"></p>
         </div>
 
         <!-- Schedule Table -->
