@@ -21,7 +21,7 @@
         <h2 class="text-success fs-4 mb-3">Welcome, <span th:text="${teacherName}">Teacher Name</span>!</h2>
         
         <!-- Schedule Table -->
-        <table class="table table-striped mt-4">
+        <table class="table table-striped mt-4" id="scheduleTable">
             <thead class="table-primary">
                 <tr>
                     <th>Time Slot</th>
@@ -47,5 +47,30 @@
         
         <button class="btn btn-danger mt-3" onclick="window.location.href='/logout'">Logout</button>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const table = document.getElementById("scheduleTable");
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr")).filter(row => !row.querySelector("td[colspan]"));
+
+            rows.sort((a, b) => {
+                const timeA = a.cells[0].textContent.trim();
+                const timeB = b.cells[0].textContent.trim();
+
+                const [startA] = timeA.split(" - ").map(t => parseTime(t));
+                const [startB] = timeB.split(" - ").map(t => parseTime(t));
+
+                return startA - startB;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+
+            function parseTime(time) {
+                const [hours, minutes] = time.split(":").map(Number);
+                return hours * 60 + minutes; // Convert time to minutes for comparison
+            }
+        });
+    </script>
 </body>
 </html>

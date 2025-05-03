@@ -349,25 +349,19 @@ public class AdminController {
             return "redirect:/signin";
         }
 
-        // Check if a schedule already exists
-        if (!scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel).isEmpty()) {
-            model.addAttribute("error", "A schedule already exists for the selected section, school year, and grade level.");
-            model.addAttribute("sections", sectionRepository.findAll());
-            model.addAttribute("schoolYears", schoolYearRepository.findAll());
-            model.addAttribute("rooms", roomRepository.findAll());
-            model.addAttribute("selectedSection", section);
-            model.addAttribute("selectedSchoolYear", schoolYear);
-            model.addAttribute("selectedRoom", room);
-            model.addAttribute("selectedGradeLevel", gradeLevel);
-            return "admin/schedule";
-        }
-
         try {
-            // Use the updated method to save schedules with subsubjects
+            // Generate a schedule if it doesn't already exist
+            if (scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel).isEmpty()) {
+                scheduleService.generateSchedule(section, schoolYear, gradeLevel);
+            }
+
+            // Save the generated schedule
             scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel); // Pass room to the service
+            model.addAttribute("successMessage", "Schedule successfully generated and saved.");
         } catch (IllegalStateException e) {
             model.addAttribute("error", e.getMessage());
         }
+
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("rooms", roomRepository.findAll());

@@ -28,6 +28,24 @@
     <div class="container mt-5">
         <h1 class="mb-4 text-center">Archived Schedules</h1>
         <a href="/teachers/allSchedules" class="btn btn-primary mb-3">Back to All Schedules</a>
+
+        <!-- Filter Form -->
+        <form id="filterForm" action="/teachers/archivedSchedules/filter" method="GET" class="mb-4">
+            <div class="row mb-4">
+                <!-- Dropdown for School Year -->
+                <div class="col-md-4">
+                    <label for="schoolYear" class="form-label">Select School Year</label>
+                    <select name="schoolYear" id="schoolYear" class="form-select">
+                        <option value="" selected>All School Years</option>
+                        <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
+                                th:text="${schoolYear.year}" th:selected="${selectedSchoolYear == schoolYear.year}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mb-3 w-100">Filter Archived Schedules</button>
+        </form>
+
         <table class="table table-striped">
             <thead>
                 <tr>

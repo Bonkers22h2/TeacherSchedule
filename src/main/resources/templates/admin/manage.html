@@ -22,6 +22,7 @@
             padding: 30px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border: #333 solid 3px;
+            margin-bottom: 50px; /* Add margin-bottom for spacing */
         }
 
         .table-container {
@@ -31,7 +32,7 @@
 </style>
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
-    <div class="container mt-5 px-5 py-5">
+    <div class="container mt-5 mb-5">
         <h2 class="text-center mb-4">Manage Sections, School Years, and Rooms</h2>
 
         <!-- Display error messages -->
@@ -94,7 +95,7 @@
         <div id="roomsTable" class="mt-4 d-none">
             <h3 class="text-center">Rooms</h3>
             <div class="table-container">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped mb-3">
                     <thead>
                         <tr>
                             <th>Room Name</th>
