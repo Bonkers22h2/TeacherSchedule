@@ -626,6 +626,36 @@ public String showTeacherList(HttpSession session, Model model) {
 
         List<ArchivedSchedule> archivedSchedules = archivedScheduleRepository.findAll();
         model.addAttribute("archivedSchedules", archivedSchedules);
+
+        // Add school years to the model for the dropdown
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+
+        return "admin/archivedSchedules";
+    }
+
+    @GetMapping("/archivedSchedules/filter")
+    public String filterArchivedSchedules(@RequestParam(value = "schoolYear", required = false) String schoolYear, 
+                                           Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+
+        List<ArchivedSchedule> filteredArchivedSchedules;
+
+        if (schoolYear == null || schoolYear.isEmpty()) {
+            // If no school year is selected, show all archived schedules
+            filteredArchivedSchedules = archivedScheduleRepository.findAll();
+        } else {
+            // Filter archived schedules by the selected school year
+            filteredArchivedSchedules = archivedScheduleRepository.findAll().stream()
+                .filter(schedule -> schoolYear.equals(schedule.getSchoolYear()))
+                .collect(Collectors.toList());
+        }
+
+        model.addAttribute("filteredArchivedSchedules", filteredArchivedSchedules);
+        model.addAttribute("schoolYears", schoolYearRepository.findAll());
+        model.addAttribute("selectedSchoolYear", schoolYear);
+
         return "admin/archivedSchedules";
     }
 
