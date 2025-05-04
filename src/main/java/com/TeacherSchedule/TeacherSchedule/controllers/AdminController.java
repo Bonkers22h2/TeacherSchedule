@@ -238,6 +238,7 @@ public class AdminController {
 
             // Save teacher to archived_teachers table
             ArchivedTeacher archivedTeacher = new ArchivedTeacher(teacher);
+            archivedTeacher.setArchivedAt(LocalDate.now()); // Ensure the current date is set
             archivedTeacherRepository.save(archivedTeacher);
 
             // Delete teacher from the main table
@@ -553,6 +554,15 @@ public String showTeacherList(HttpSession session, Model model) {
     return "admin/attendance";
 }
 
+@GetMapping("/archived")
+public String showArchivedTeachers(Model model, HttpSession session) {
+    if (!"admin".equals(session.getAttribute("role"))) {
+        return "redirect:/signin";
+    }
+
+    model.addAttribute("archivedTeachers", archivedTeacherRepository.findAll());
+    return "admin/archivedTeachers";
+}
 
     @PostMapping("/autoAssignTeacher")
     public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,

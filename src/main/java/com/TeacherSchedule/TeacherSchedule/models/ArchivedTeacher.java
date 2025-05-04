@@ -26,6 +26,7 @@ public class ArchivedTeacher {
     private int yearsOfExperience;
 
     private LocalDate createdAt;
+    private LocalDate archivedAt;
 
     public ArchivedTeacher() {}
 
@@ -42,6 +43,7 @@ public class ArchivedTeacher {
         this.gradeLevels = teacher.getGradeLevels();
         this.yearsOfExperience = teacher.getYearsOfExperience();
         this.createdAt = teacher.getCreatedAt();
+        this.archivedAt = LocalDate.now(); // Set the archived date to the current date
     }
 
     public int getId() {
@@ -146,5 +148,13 @@ public class ArchivedTeacher {
 
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDate getArchivedAt() {
+        return archivedAt;
+    }
+
+    public void setArchivedAt(LocalDate archivedAt) {
+        this.archivedAt = archivedAt;
     }
 }
