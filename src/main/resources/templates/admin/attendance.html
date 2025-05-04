@@ -199,6 +199,7 @@
             <tr style="font-size: 1.1rem;">
               <th class="custom-header">Name</th>
               <th class="custom-header">Subject</th>
+              <th class="custom-header">Grade Level</th>
               <th class="custom-header">Date</th>
               <th class="custom-header">Status</th>
             </tr>
@@ -207,6 +208,7 @@
             <tr th:each="ts : ${teacherStatuses}">
               <td th:text="${ts.teacher.firstName} + ' ' + ${ts.teacher.lastName}"></td>
               <td th:text="${ts.teacher.subjects}"></td>
+              <td th:text="${ts.teacher.gradeLevels}"></td>
               <td th:text="${today}"></td>
               <td th:text="${ts.status}" 
                   th:classappend="${ts.status == 'Present' ? 'text-success' : 
