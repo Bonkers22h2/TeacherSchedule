@@ -596,37 +596,23 @@ public String showArchivedTeachers(Model model, HttpSession session) {
 
     @PostMapping("/autoAssignTeacher")
     public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,
-            @RequestParam(value = "schoolYear", required = false) String schoolYear,
-            @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
-            HttpSession session, Model model) {
-        if (!"admin".equals(session.getAttribute("role"))) {
-            return "redirect:/signin";
-        }
-
+                                      RedirectAttributes redirectAttributes) {
         try {
-            scheduleService.autoAssignTeachers(section, schoolYear, gradeLevel);
-            model.addAttribute("successMessage", "Teachers successfully assigned based on the selected filters.");
+            scheduleService.autoAssignTeachers(section);
+            redirectAttributes.addFlashAttribute("successMessage", "Teachers successfully assigned!");
         } catch (IllegalStateException e) {
-            model.addAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "An unexpected error occurred: " + e.getMessage());
         }
-
-        List<Schedule> schedules = scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel);
-        model.addAttribute("schedules", schedules);
-        model.addAttribute("sections", sectionRepository.findAll());
-        model.addAttribute("schoolYears", schoolYearRepository.findAll());
-        model.addAttribute("selectedSection", section);
-        model.addAttribute("selectedSchoolYear", schoolYear);
-        model.addAttribute("selectedGradeLevel", gradeLevel);
-        return "admin/allSchedules";
+        return "redirect:/teachers/allSchedules";
     }
 
     @PostMapping("/autoAssignLabRoom")
     public String autoAssignLabRoom(@RequestParam(value = "section", required = false) String section,
-                                    @RequestParam(value = "schoolYear", required = false) String schoolYear,
-                                    @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
                                     RedirectAttributes redirectAttributes) {
         try {
-            scheduleService.autoAssignLabRooms(section, schoolYear, gradeLevel);
+            scheduleService.autoAssignLabRooms(section);
             redirectAttributes.addFlashAttribute("successMessage", "Lab rooms successfully assigned!");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

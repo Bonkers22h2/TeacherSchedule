@@ -306,21 +306,19 @@ public class ScheduleService {
         return scheduleRepository.findByTeacher(teacher);
     }
 
-    public void autoAssignTeachers(String section, String schoolYear, String gradeLevel) {
-        // Check if a schedule already exists for the given section and school year
-        List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
+    public void autoAssignTeachers(String section) {
+        String currentSchoolYear = getCurrentSchoolYear();
+        List<Schedule> schedules = getSchedulesBySectionAndSchoolYear(section, currentSchoolYear);
         if (schedules.isEmpty()) {
-            throw new IllegalStateException("No schedules found for the selected filters.");
+            throw new IllegalStateException("No schedules found for the selected section and current school year.");
         }
 
-        // Get all teachers assigned to Homeroom classes
         Set<Integer> assignedHomeroomTeachers = scheduleRepository.findAll().stream()
                 .filter(schedule -> "Homeroom".equals(schedule.getSubject()) && schedule.getTeacher() != null)
                 .map(schedule -> schedule.getTeacher().getId())
                 .collect(Collectors.toSet());
 
         for (Schedule schedule : schedules) {
-            // Skip schedules that already have an assigned teacher
             if (schedule.getTeacher() != null) {
                 continue;
             }
@@ -329,35 +327,24 @@ public class ScheduleService {
             List<Teacher> teachers;
 
             if ("Homeroom".equals(subject)) {
-                // For Homeroom, select any teacher from the selected grade level who is not
-                // already assigned
                 teachers = teacherRepository.findAll().stream()
-                        .filter(teacher -> teacher.getGradeLevels() != null &&
-                                List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check
-                                                                                                   // for exact match
                         .filter(teacher -> !assignedHomeroomTeachers.contains(teacher.getId()))
                         .collect(Collectors.toList());
             } else {
-                // For other subjects, filter teachers by subject and grade level
                 if (subject.startsWith("TLE")) {
-                    subject = "TLE"; // Treat all TLE subjects as "TLE"
+                    subject = "TLE";
                 }
-                teachers = teacherRepository.findBySubjectsContaining(subject).stream()
-                        .filter(teacher -> teacher.getGradeLevels() != null &&
-                                List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check
-                                                                                                   // for exact match
-                        .collect(Collectors.toList());
+                teachers = teacherRepository.findBySubjectsContaining(subject);
             }
 
             boolean teacherAssigned = false;
 
             for (Teacher teacher : teachers) {
-                // Check if the teacher is already assigned to a schedule at the same time slot
                 boolean conflict = scheduleRepository.existsByTimeSlotAndTeacher(schedule.getTimeSlot(), teacher);
                 if (!conflict) {
-                    schedule.setTeacher(teacher); // Assign the teacher if no conflict
+                    schedule.setTeacher(teacher);
                     if ("Homeroom".equals(subject)) {
-                        assignedHomeroomTeachers.add(teacher.getId()); // Mark the teacher as assigned for Homeroom
+                        assignedHomeroomTeachers.add(teacher.getId());
                     }
                     teacherAssigned = true;
                     break;
@@ -365,42 +352,46 @@ public class ScheduleService {
             }
 
             if (!teacherAssigned) {
-                schedule.setTeacher(null); // Leave the teacher field blank if no suitable teacher is available
+                schedule.setTeacher(null);
             }
 
             scheduleRepository.save(schedule);
         }
     }
 
-    public void autoAssignLabRooms(String section, String schoolYear, String gradeLevel) {
-        List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
+    public void autoAssignLabRooms(String section) {
+        String currentSchoolYear = getCurrentSchoolYear();
+        List<Schedule> schedules = getSchedulesBySectionAndSchoolYear(section, currentSchoolYear);
         List<Room> labRooms = roomRepository.findAll().stream()
-                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty()) // Filter rooms with lab
-                                                                                           // types
+                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty())
                 .collect(Collectors.toList());
 
         if (schedules.isEmpty() || labRooms.isEmpty()) {
             throw new IllegalStateException("No schedules or lab rooms available for assignment.");
         }
 
-        // Assign lab rooms to schedules
         for (Schedule schedule : schedules) {
             String subject = schedule.getSubject();
             Room assignedRoom = null;
 
             if ("Science".equals(subject)) {
-                // Directly assign a science lab room for Science
                 assignedRoom = findAvailableLabRoom(schedule, labRooms, "Science");
             } else if (schedule.getSubSubject() != null) {
-                // Assign lab rooms for schedules with sub_subject
                 assignedRoom = findAvailableLabRoom(schedule, labRooms, schedule.getSubSubject());
             }
 
             if (assignedRoom != null) {
                 schedule.setLabRoom(assignedRoom.getName());
-                scheduleRepository.save(schedule); // Save the updated schedule
+                scheduleRepository.save(schedule);
             }
         }
+    }
+
+    private String getCurrentSchoolYear() {
+        return scheduleRepository.findAll().stream()
+                .map(Schedule::getSchoolYear)
+                .max(String::compareTo)
+                .orElseThrow(() -> new IllegalStateException("No current school year found."));
     }
 
     private Room findAvailableLabRoom(Schedule schedule, List<Room> labRooms, String labType) {
