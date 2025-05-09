@@ -156,9 +156,10 @@
                 <tr>
                     <th>Time Slot</th>
                     <th>Subject</th>
+                    <th>Sub-Subject</th> <!-- New Sub-Subject Column -->
                     <th>Section</th>
                     <th>Room</th>
-                    <th>Lab Room</th> <!-- New Lab Room Column -->
+                    <th>Lab Room</th>
                     <th>School Year</th>
                     <th>Grade Level</th>
                     <th>Assigned Teacher</th>
@@ -169,6 +170,7 @@
                 <tr th:each="schedule : ${schedules}">
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
+                    <td th:text="${schedule.subSubject != null ? schedule.subSubject : 'None'}"></td> <!-- Sub-Subject -->
                     <td th:text="${schedule.section}"></td>
                     <td th:text="${schedule.room != null ? schedule.room : 'No Assigned Room'}"></td> <!-- Dynamically display room -->
                     <td th:text="${schedule.labRoom != null ? schedule.labRoom : 'No Assigned Lab Room'}"></td> <!-- Lab Room -->

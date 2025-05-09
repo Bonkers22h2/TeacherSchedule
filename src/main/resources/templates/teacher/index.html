@@ -28,9 +28,10 @@
                 <tr>
                     <th>Time Slot</th>
                     <th>Subject</th>
+                    <th>Sub-Subject</th> <!-- New Sub-Subject Column -->
                     <th>Section</th>
                     <th>Room</th>
-                    <th>Laboratory Room</th> <!-- New Lab Room Column -->
+                    <th>Laboratory Room</th>
                     <th>School Year</th>
                 </tr>
             </thead>
@@ -38,13 +39,14 @@
                 <tr th:each="schedule : ${schedules}">
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject != null} ? ${schedule.subject} : ${schedule.className}"></td>
+                    <td th:text="${schedule.subSubject != null} ? ${schedule.subSubject} : 'None'"></td> <!-- Sub-Subject -->
                     <td th:text="${schedule.section}"></td>
                     <td th:text="${schedule.room != null} ? ${schedule.room} : 'No Assigned Room'"></td>
-                    <td th:text="${schedule.labRoom != null} ? ${schedule.labRoom} : 'No Assigned Lab Room'"></td> <!-- Lab Room -->
+                    <td th:text="${schedule.labRoom != null} ? ${schedule.labRoom} : 'No Assigned Lab Room'"></td>
                     <td th:text="${schedule.schoolYear}"></td>
                 </tr>
                 <tr th:if="${schedules == null or schedules.empty}">
-                    <td colspan="6" class="text-center">No schedules assigned</td>
+                    <td colspan="7" class="text-center">No schedules assigned</td>
                 </tr>
             </tbody>
         </table>

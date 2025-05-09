@@ -156,9 +156,10 @@
                 <tr>
                     <th>Time Slot</th>
                     <th>Subject</th>
+                    <th>Sub-Subject</th> <!-- New Sub-Subject Column -->
                     <th>Section</th>
                     <th>School Year</th>
-                    <th>Grade Level</th> <!-- Added Grade Level column -->
+                    <th>Grade Level</th>
                 </tr>
             </thead>
             <tbody>
@@ -166,9 +167,8 @@
                 <tr th:each="entry : ${schedule}">
                     <td th:text="${#strings.arraySplit(entry, ' - ')[0]}"></td> <!-- Time Slot Start -->
                     <td th:text="${#strings.arraySplit(entry, ' - ')[2]}"></td> <!-- Subject -->
-                    <td
-                        th:text="${#strings.arraySplit(entry, ' - ').length > 3 ? #strings.arraySplit(entry, ' - ')[3] : 'Unknown Section'}">
-                    </td> <!-- Section -->
+                    <td th:text="${#strings.arraySplit(entry, ' - ')[3]}"></td> <!-- Sub-Subject -->
+                    <td th:text="${#strings.arraySplit(entry, ' - ')[4]}"></td> <!-- Section -->
                     <td th:text="${currentSchoolYear}"></td> <!-- Display School Year -->
                     <td th:text="${selectedGradeLevel}"></td> <!-- Display Grade Level -->
                 </tr>

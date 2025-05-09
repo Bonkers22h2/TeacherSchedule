@@ -95,7 +95,7 @@
         </form>
 
         <!-- Next School Year Button -->
-        <form action="/teachers/manage/nextSchoolYear" method="POST" class="mb-4">
+        <form action="/teachers/manage/nextSchoolYear" method="POST" class="mb-4" onsubmit="return confirmPassword();">
             <button type="submit" class="btn btn-success w-100 mt-5">Go to Next School Year</button>
         </form>
 
@@ -191,8 +191,14 @@
             document.getElementById(tableId).classList.remove('d-none');
         }
 
-        function showSuccessMessage(message) {
-            alert(message); // Temporary success message display
+        function confirmPassword() {
+            const password = prompt("Enter the admin password to proceed to the next school year:");
+            if (password === "adminadmin") { // Replace "adminadmin" with the actual admin password
+                return true;
+            } else {
+                alert("Incorrect password. Action canceled.");
+                return false;
+            }
         }
     </script>
 </body>

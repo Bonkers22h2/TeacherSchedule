@@ -23,6 +23,11 @@
             </div>
 
             <div class="mb-3">
+                <label for="subSubject" class="form-label">Sub-Subject</label>
+                <input type="text" id="subSubject" th:field="*{subSubject}" class="form-control" />
+            </div>
+
+            <div class="mb-3">
                 <label for="section" class="form-label">Section</label>
                 <select id="section" th:field="*{section}" class="form-select">
                     <option th:each="section : ${sections}" th:value="${section.name}" th:text="${section.name}"></option>

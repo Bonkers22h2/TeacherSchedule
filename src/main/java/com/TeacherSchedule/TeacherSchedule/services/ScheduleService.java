@@ -4,6 +4,8 @@ import com.TeacherSchedule.TeacherSchedule.models.Schedule;
 import com.TeacherSchedule.TeacherSchedule.models.Teacher;
 import com.TeacherSchedule.TeacherSchedule.models.Room; // Import Room class
 import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository; // Import RoomRepository
+import com.TeacherSchedule.TeacherSchedule.repositories.SubjectRepository; // Import SubjectRepository
+import com.TeacherSchedule.TeacherSchedule.models.Subject; // Import Subject class
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -36,6 +38,9 @@ public class ScheduleService {
 
     @Autowired
     private RoomRepository roomRepository; // Inject RoomRepository
+
+    @Autowired
+    private SubjectRepository subjectRepository; // Inject SubjectRepository
 
     private List<String> currentSchedule = new ArrayList<>(); // Store the generated schedule
 
@@ -129,33 +134,18 @@ public class ScheduleService {
                             continue;
                         }
 
-                        // Add subsubject logic for TLE
                         String subjectName = scheduledClass.getName();
-                        if ("TLE".equals(subjectName)) {
-                            switch (gradeLevel) {
-                                case "Grade 1":
-                                case "Grade 2":
-                                case "Grade 3":
-                                case "Grade 4":
-                                    subjectName += " - Agriculture";
-                                    break;
-                                case "Grade 5":
-                                case "Grade 6":
-                                    subjectName += " - Industrial Arts";
-                                    break;
-                                case "Grade 7":
-                                case "Grade 8":
-                                    subjectName += " - Home Economics";
-                                    break;
-                                case "Grade 9":
-                                case "Grade 10":
-                                    subjectName += " - ICT";
-                                    break;
-                            }
+                        String subSubject = null;
+
+                        // Fetch sub-subject from the subjects table
+                        Subject subjectEntity = subjectRepository.findByNameAndGradeLevel(subjectName, gradeLevel);
+                        if (subjectEntity != null) {
+                            subSubject = subjectEntity.getSubSubject();
                         }
 
-                        String classEntry = String.format("%02d:%02d - %02d:%02d - %s - Section %d",
-                                i, startMinute, endHour, endMinute, subjectName, scheduledClass.getSection());
+                        String classEntry = String.format("%02d:%02d - %02d:%02d - %s - %s - Section %d",
+                                i, startMinute, endHour, endMinute, subjectName, 
+                                subSubject != null ? subSubject : "None", scheduledClass.getSection());
                         scheduleOutput.add(classEntry);
                         scheduledSubjects.add(scheduledClass.getName());
                     } else if (timeSlots.get(timeSlotIndex) == -2) {
@@ -184,69 +174,13 @@ public class ScheduleService {
                 String subject = parts[2];
                 String subSubject = null;
 
-                // Add subsubject logic for TLE
-                if ("TLE".equals(subject)) {
-                    switch (selectedGradeLevel) {
-                        case "Grade 1":
-                        case "Grade 2":
-                        case "Grade 3":
-                        case "Grade 4":
-                            subSubject = "Agriculture";
-                            break;
-                        case "Grade 5":
-                        case "Grade 6":
-                            subSubject = "Industrial Arts";
-                            break;
-                        case "Grade 7":
-                        case "Grade 8":
-                            subSubject = "Home Economics";
-                            break;
-                        case "Grade 9":
-                        case "Grade 10":
-                            subSubject = "ICT";
-                            break;
-                    }
-                    subject += " - " + subSubject; // Append subsubject to the subject
+                // Fetch sub-subject from the subjects table
+                Subject subjectEntity = subjectRepository.findByNameAndGradeLevel(subject, selectedGradeLevel);
+                if (subjectEntity != null) {
+                    subSubject = subjectEntity.getSubSubject();
                 }
 
-                if ("Science".equals(subject)) {
-                    subSubject = "Science";
-                }
-
-                // Assign laboratory room based on subject
-                String labRoom = null;
-                if (subSubject != null) {
-                    switch (subSubject) {
-                        case "ICT":
-                            labRoom = roomRepository.findFirstByLabType("ICT").map(Room::getName)
-                                    .orElse("Default ICT Lab");
-                            break;
-                        case "Home Economics":
-                            labRoom = roomRepository.findFirstByLabType("Home Economics").map(Room::getName)
-                                    .orElse("Default Home Economics Lab");
-                            break;
-                        case "Agriculture":
-                            labRoom = roomRepository.findFirstByLabType("Agriculture").map(Room::getName)
-                                    .orElse("Default Agriculture Lab");
-                            break;
-                        case "Science":
-                            labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName)
-                                    .orElse("Default Science Lab");
-                            break;
-                        case "Industrial Arts":
-                            labRoom = roomRepository.findFirstByLabType("Industrial Arts").map(Room::getName)
-                                    .orElse("Default Industrial Arts Lab");
-                            break;
-                    }
-                }
-
-                if ("Science".equals(subject)) {
-                    // Directly assign a science lab room for Science
-                    labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName)
-                            .orElse("Default Science Lab");
-                }
-
-                // Save the schedule with the lab room
+                // Save the schedule with the sub-subject
                 scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection,
                         selectedSchoolYear, selectedRoom, selectedGradeLevel, subSubject));
             }

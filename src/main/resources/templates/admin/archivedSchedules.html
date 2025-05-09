@@ -51,6 +51,7 @@
                 <tr>
                     <th>Time Slot</th>
                     <th>Subject</th>
+                    <th>Sub-Subject</th> <!-- New Sub-Subject Column -->
                     <th>Section</th>
                     <th>Room</th>
                     <th>Lab Room</th>
@@ -63,6 +64,7 @@
                 <tr th:each="schedule : ${filteredArchivedSchedules}">
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
+                    <td th:text="${schedule.subSubject != null ? schedule.subSubject : 'None'}"></td> <!-- Sub-Subject -->
                     <td th:text="${schedule.section}"></td>
                     <td th:text="${schedule.room}"></td>
                     <td th:text="${schedule.labRoom}"></td>

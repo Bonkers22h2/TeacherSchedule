@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
     List<Subject> findByGradeLevel(String gradeLevel); // Fetch subjects by grade level
+
+    Subject findByNameAndGradeLevel(String name, String gradeLevel); // Fetch subject by name and grade level
 }
