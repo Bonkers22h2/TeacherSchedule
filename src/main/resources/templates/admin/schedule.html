@@ -93,7 +93,7 @@
 
         <div class="row mb-3">
             <!-- Dropdown for Section -->
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label for="section" class="form-label">Select Section</label>
                 <select name="section" id="section" class="form-select" form="generateForm" required>
                     <option th:each="section : ${sections}" th:value="${section.name}" th:text="${section.name}"
@@ -102,18 +102,8 @@
                 </select>
             </div>
 
-            <!-- Dropdown for School Year -->
-            <div class="col-md-3">
-                <label for="schoolYear" class="form-label">Select School Year</label>
-                <select name="schoolYear" id="schoolYear" class="form-select" form="generateForm" required>
-                    <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}"
-                        th:text="${schoolYear.year}" th:selected="${selectedSchoolYear == schoolYear.year}">
-                    </option>
-                </select>
-            </div>
-
             <!-- Dropdown for Rooms -->
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label for="room" class="form-label">Available Room</label>
                 <select name="room" id="room" class="form-select" form="generateForm" required>
                     <option th:each="room : ${rooms}" th:value="${room.name}" th:text="${room.name}" th:selected="${selectedRoom == room.name}">
@@ -122,7 +112,7 @@
             </div>
 
             <!-- Dropdown for Grade Level -->
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label for="gradeLevel" class="form-label">Select Grade Level</label>
                 <select name="gradeLevel" id="gradeLevel" class="form-select" form="generateForm" required>
                     <option value="" disabled>Select Grade</option>
@@ -131,7 +121,6 @@
                     </option>
                 </select>
             </div>
-
         </div>
         <div class="row mb-3">
             <!-- Generate Schedule Button -->
@@ -139,7 +128,7 @@
                 <form id="generateForm" action="/teachers/schedule/generate" method="POST"
                     onsubmit="return confirm('Are you sure you want to generate the schedule?');">
                     <input type="hidden" name="section" id="generateSection" value="" />
-                    <input type="hidden" name="schoolYear" id="generateSchoolYear" value="" />
+                    <input type="hidden" name="schoolYear" th:value="${currentSchoolYear}" /> <!-- Use current school year -->
                     <input type="hidden" name="room" id="generateRoom" value="" />
                     <input type="hidden" name="gradeLevel" id="generateGradeLevel" value="" />
                     <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
@@ -153,7 +142,7 @@
                 <form id="saveForm" action="/teachers/saveSchedule" method="POST"
                     onsubmit="return confirm('Are you sure you want to save the schedule?');">
                     <input type="hidden" name="section" id="saveSection" value="" />
-                    <input type="hidden" name="schoolYear" id="saveSchoolYear" value="" />
+                    <input type="hidden" name="schoolYear" th:value="${currentSchoolYear}" /> <!-- Use current school year -->
                     <input type="hidden" name="room" id="saveRoom" value="" />
                     <input type="hidden" name="gradeLevel" id="saveGradeLevel" value="" />
                     <button type="submit" class="btn btn-success w-100">Save Schedule</button>
@@ -180,7 +169,7 @@
                     <td
                         th:text="${#strings.arraySplit(entry, ' - ').length > 3 ? #strings.arraySplit(entry, ' - ')[3] : 'Unknown Section'}">
                     </td> <!-- Section -->
-                    <td th:text="${selectedSchoolYear}"></td> <!-- Display School Year -->
+                    <td th:text="${currentSchoolYear}"></td> <!-- Display School Year -->
                     <td th:text="${selectedGradeLevel}"></td> <!-- Display Grade Level -->
                 </tr>
             </tbody>
@@ -192,11 +181,6 @@
         document.getElementById('section').addEventListener('change', function () {
             document.getElementById('generateSection').value = this.value;
             document.getElementById('saveSection').value = this.value;
-        });
-
-        document.getElementById('schoolYear').addEventListener('change', function () {
-            document.getElementById('generateSchoolYear').value = this.value;
-            document.getElementById('saveSchoolYear').value = this.value;
         });
 
         document.getElementById('room').addEventListener('change', function () {
@@ -212,8 +196,6 @@
         // Initialize the hidden inputs with the current dropdown values
         document.getElementById('generateSection').value = document.getElementById('section').value;
         document.getElementById('saveSection').value = document.getElementById('section').value;
-        document.getElementById('generateSchoolYear').value = document.getElementById('schoolYear').value;
-        document.getElementById('saveSchoolYear').value = document.getElementById('schoolYear').value;
         document.getElementById('generateRoom').value = document.getElementById('room').value;
         document.getElementById('saveRoom').value = document.getElementById('room').value;
         document.getElementById('generateGradeLevel').value = document.getElementById('gradeLevel').value;

@@ -8,6 +8,7 @@ import com.TeacherSchedule.TeacherSchedule.models.TeacherStatusDTO;
 import com.TeacherSchedule.TeacherSchedule.models.Room;
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedSchedule;
 import com.TeacherSchedule.TeacherSchedule.models.Section;
+import com.TeacherSchedule.TeacherSchedule.models.SchoolYear;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
@@ -124,6 +125,14 @@ public class AdminController {
 
         model.addAttribute("teachersPresent", teachersPresent);
         addSectionCountToModel(model);
+
+        // Fetch the current school year
+        String currentSchoolYear = schoolYearRepository.findAll().stream()
+                .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                .map(sy -> sy.getYear())
+                .orElse("No School Year Available");
+        model.addAttribute("currentSchoolYear", currentSchoolYear);
+
         return "admin/index";
     }
 
@@ -355,7 +364,6 @@ public class AdminController {
 
     @PostMapping("/saveSchedule")
     public String saveSchedule(@RequestParam("section") String section,
-            @RequestParam("schoolYear") String schoolYear,
             @RequestParam("room") String room,
             @RequestParam("gradeLevel") String gradeLevel,
             HttpSession session, RedirectAttributes redirectAttributes) {
@@ -374,13 +382,22 @@ public class AdminController {
         }
 
         try {
+            // Fetch the current school year
+            String currentSchoolYear = schoolYearRepository.findAll().stream()
+                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                    .map(sy -> sy.getYear())
+                    .orElseThrow(() -> new IllegalStateException("No current school year found."));
+
+            // Ensure the current school year exists in the database
+            if (!schoolYearRepository.findAll().stream().anyMatch(sy -> sy.getYear().equals(currentSchoolYear))) {
+                SchoolYear newSchoolYear = new SchoolYear(currentSchoolYear);
+                schoolYearRepository.save(newSchoolYear);
+            }
+
             // Save the schedule
-            scheduleService.saveScheduleWithSubSubjects(section, schoolYear, room, gradeLevel);
+            scheduleService.saveScheduleWithSubSubjects(section, currentSchoolYear, room, gradeLevel);
 
-            // Automatically generate one schedule after saving
-            scheduleService.generateSchedule(section, schoolYear, gradeLevel);
-
-            redirectAttributes.addFlashAttribute("successMessage", "Schedule saved and one schedule automatically generated.");
+            redirectAttributes.addFlashAttribute("successMessage", "Schedule saved successfully for the current school year.");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {

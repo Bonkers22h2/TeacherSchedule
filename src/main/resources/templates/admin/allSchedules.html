@@ -93,7 +93,7 @@
         <form id="filterForm" action="/teachers/filterSchedule" method="GET" class="mb-4">
             <div class="row mb-4">
                 <!-- Dropdown for Section -->
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="section" class="form-label">Select Section</label>
                     <select name="section" id="section" class="form-select">
                         <option value="" selected>All Sections</option>
@@ -103,19 +103,8 @@
                     </select>
                 </div>
 
-                <!-- Dropdown for School Year -->
-                <div class="col-md-4">
-                    <label for="schoolYear" class="form-label">Select School Year</label>
-                    <select name="schoolYear" id="schoolYear" class="form-select">
-                        <option value="" selected>All School Years</option>
-                        <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" 
-                                th:text="${schoolYear.year}" th:selected="${selectedSchoolYear == schoolYear.year}">
-                        </option>
-                    </select>
-                </div>
-
                 <!-- Dropdown for Grade Level -->
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="gradeLevel" class="form-label">Select Grade Level</label>
                     <select name="gradeLevel" id="gradeLevel" class="form-select">
                         <option value="" selected>All Grade Levels</option>
@@ -150,7 +139,10 @@
         <div class="row">
             <div class="col">
                 <form id="archiveSchedulesForm" action="/teachers/archiveSchedules" method="POST" onsubmit="return confirmArchive();">
-                    <button type="submit" class="btn btn-danger mb-3 w-100">Archive All Schedules</button>
+                    <input type="hidden" name="section" id="archiveSection" th:value="${selectedSection}">
+                    <input type="hidden" name="schoolYear" id="archiveSchoolYear" th:value="${selectedSchoolYear}">
+                    <input type="hidden" name="gradeLevel" id="archiveGradeLevel" th:value="${selectedGradeLevel}">
+                    <button type="submit" class="btn btn-danger mb-3 w-100">Archive Filtered Schedules</button>
                 </form>
             </div>
             <div class="col">
@@ -194,12 +186,6 @@
             document.getElementById('section').addEventListener('change', function () {
                 document.getElementById('filterSection').value = this.value;
                 document.getElementById('filterSchoolYear').value = ''; // Reset other filters
-                document.getElementById('filterGradeLevel').value = '';
-            });
-
-            document.getElementById('schoolYear').addEventListener('change', function () {
-                document.getElementById('filterSchoolYear').value = this.value;
-                document.getElementById('filterSection').value = ''; // Reset other filters
                 document.getElementById('filterGradeLevel').value = '';
             });
 
@@ -258,12 +244,11 @@
             // Ensure all dropdowns are required before submitting the form
             document.getElementById('filterForm').addEventListener('submit', function (event) {
                 const section = document.getElementById('section').value;
-                const schoolYear = document.getElementById('schoolYear').value;
                 const gradeLevel = document.getElementById('gradeLevel').value;
 
-                if (!section || !schoolYear || !gradeLevel) {
+                if (!section || !gradeLevel) {
                     event.preventDefault();
-                    alert('All filters (Section, School Year, and Grade Level) are required.');
+                    alert('All filters (Section and Grade Level) are required.');
                 }
             });
 

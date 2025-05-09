@@ -278,6 +278,10 @@ public class ScheduleService {
         return scheduleRepository.findBySectionAndSchoolYearAndGradeLevel(section, schoolYear, gradeLevel);
     }
 
+    public List<Schedule> getSchedulesBySectionAndGradeLevel(String section, String gradeLevel) {
+        return scheduleRepository.findBySectionAndGradeLevel(section, gradeLevel);
+    }
+
     public List<Schedule> getFilteredSchedules(String section, String schoolYear, String gradeLevel) {
         if (section != null && schoolYear != null && gradeLevel != null) {
             return scheduleRepository.findBySectionAndSchoolYearAndGradeLevel(section, schoolYear, gradeLevel);

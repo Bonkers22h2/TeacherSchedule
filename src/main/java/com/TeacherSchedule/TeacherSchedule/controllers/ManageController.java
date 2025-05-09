@@ -6,18 +6,23 @@ import com.TeacherSchedule.TeacherSchedule.models.SchoolYear;
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedRoom;
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedSection;
 import com.TeacherSchedule.TeacherSchedule.models.ArchivedSchoolYear;
+import com.TeacherSchedule.TeacherSchedule.models.Schedule;
+import com.TeacherSchedule.TeacherSchedule.models.ArchivedSchedule;
 import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SectionRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedRoomRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedSectionRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedSchoolYearRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedScheduleRepository;
 import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/teachers/manage")
@@ -40,6 +45,9 @@ public class ManageController {
 
     @Autowired
     private ArchivedSchoolYearRepository archivedSchoolYearRepository;
+
+    @Autowired
+    private ArchivedScheduleRepository archivedScheduleRepository;
 
     @Autowired
     private ScheduleService scheduleService; // Inject ScheduleService
@@ -250,6 +258,46 @@ public class ManageController {
             archivedSectionRepository.save(new ArchivedSection(section));
             sectionRepository.deleteById(id);
             redirectAttributes.addFlashAttribute("successMessage", "Section archived successfully.");
+        }
+        return "redirect:/teachers/manage";
+    }
+
+    @PostMapping("/nextSchoolYear")
+    public String goToNextSchoolYear(RedirectAttributes redirectAttributes) {
+        try {
+            // Archive all schedules before proceeding to the next school year
+            List<Schedule> schedules = scheduleService.getAllSchedules();
+            if (!schedules.isEmpty()) {
+                for (Schedule schedule : schedules) {
+                    ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
+                    archivedScheduleRepository.save(archivedSchedule);
+                    scheduleService.deleteSchedule(schedule.getId());
+                }
+            }
+
+            // Fetch the latest school year
+            SchoolYear latestSchoolYear = schoolYearRepository.findAll().stream()
+                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                    .orElse(null);
+
+            if (latestSchoolYear == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "No school year found to proceed.");
+                return "redirect:/teachers/manage";
+            }
+
+            // Parse the latest school year and calculate the next one
+            String[] years = latestSchoolYear.getYear().split("-");
+            int startYear = Integer.parseInt(years[0]) + 1;
+            int endYear = Integer.parseInt(years[1]) + 1;
+            String nextSchoolYear = startYear + "-" + endYear;
+
+            // Save the next school year
+            SchoolYear newSchoolYear = new SchoolYear(nextSchoolYear);
+            schoolYearRepository.save(newSchoolYear);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Successfully moved to the next school year: " + nextSchoolYear);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to proceed to the next school year: " + e.getMessage());
         }
         return "redirect:/teachers/manage";
     }
