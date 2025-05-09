@@ -22,7 +22,6 @@ public class Teacher {
     private String address;
 
     private String subjects;
-    private String gradeLevels;
     private int yearsOfExperience;
 
     private LocalDate createdAt;
@@ -108,14 +107,6 @@ public class Teacher {
         this.subjects = subjects;
     }
 
-    public String getGradeLevels() {
-        return gradeLevels;
-    }
-
-    public void setGradeLevels(String gradeLevels) {
-        this.gradeLevels = gradeLevels;
-    }
-
     public int getYearsOfExperience() {
         return yearsOfExperience;
     }
@@ -131,5 +122,5 @@ public class Teacher {
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
     }
-    }
+}
 

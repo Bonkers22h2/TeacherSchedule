@@ -22,7 +22,6 @@ public class ArchivedTeacher {
     private String address;
 
     private String subjects;
-    private String gradeLevels;
     private int yearsOfExperience;
 
     private LocalDate createdAt;
@@ -40,7 +39,6 @@ public class ArchivedTeacher {
         this.email = teacher.getEmail();
         this.address = teacher.getAddress();
         this.subjects = teacher.getSubjects();
-        this.gradeLevels = teacher.getGradeLevels();
         this.yearsOfExperience = teacher.getYearsOfExperience();
         this.createdAt = teacher.getCreatedAt();
         this.archivedAt = LocalDate.now(); // Set the archived date to the current date
@@ -124,14 +122,6 @@ public class ArchivedTeacher {
 
     public void setSubjects(String subjects) {
         this.subjects = subjects;
-    }
-
-    public String getGradeLevels() {
-        return gradeLevels;
-    }
-
-    public void setGradeLevels(String gradeLevels) {
-        this.gradeLevels = gradeLevels;
     }
 
     public int getYearsOfExperience() {

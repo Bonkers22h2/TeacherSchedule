@@ -48,7 +48,6 @@ public class TeacherController {
             teacher.setEmail(updatedTeacher.getEmail());
             teacher.setAddress(updatedTeacher.getAddress());
             teacher.setSubjects(updatedTeacher.getSubjects());
-            teacher.setGradeLevels(updatedTeacher.getGradeLevels());
             teacher.setYearsOfExperience(updatedTeacher.getYearsOfExperience());
             return teacherRepository.save(teacher);
         }).orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
