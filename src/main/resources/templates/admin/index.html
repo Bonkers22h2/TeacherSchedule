@@ -100,21 +100,21 @@
                     <!-- Bottom Left Container -->
                     <div class="rounded-5 p-4 flex-fill mt-3 me-2 shadow p-3"
                         style="background-color: #4B9CD3; overflow: hidden; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 1.5rem; color: white;">
-                        No. of Classes
+                        No. of Sections and Available Rooms
                         <div class="table-responsive flex-grow-1 rounded-5 mt-3" style="max-height: 300px; overflow-y: auto;">
-                            <table class="table" style="font-size: 0.9rem; text-align: center;  ">
+                            <table class="table" style="font-size: 0.9rem; text-align: center;">
                                 <thead>
                                     <tr>
-                                        <th scope="col" style="background-color: #3d7eaa; color: white;">Grade Level
-                                        </th>
-                                        <th scope="col" style="background-color: #3d7eaa; color: white;">No. of Sections
-                                        </th>
+                                        <th scope="col" style="background-color: #3d7eaa; color: white;">Grade Level</th>
+                                        <th scope="col" style="background-color: #3d7eaa; color: white;">No. of Sections</th>
+                                        <th scope="col" style="background-color: #3d7eaa; color: white;">Available Rooms</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr th:each="entry : ${sectionCountByGrade}">
                                         <th scope="row" class="p-3" th:text="${entry.key}"></th> <!-- Grade Level -->
                                         <td class="p-3" th:text="${entry.value}"></td> <!-- Number of Sections -->
+                                        <td class="p-3" th:text="${availableRoomsByGrade[entry.key]}"></td> <!-- Available Rooms -->
                                     </tr>
                                 </tbody>
                             </table>

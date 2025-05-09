@@ -66,15 +66,18 @@ public class ScheduleService {
         }
     }
 
+    // used for backtracking algorithm to schedule classes
     private boolean backtrack(int classIndex, boolean breakScheduled) {
         if (classIndex == classes.size()) {
             return true; // All classes have been scheduled
         }
-
         for (int i = 0; i < timeSlots.size(); i++) {
+            // Check if the time slot is available
             if (timeSlots.get(i) == -1) {
+                // Check if the class can be scheduled in this time slot
                 timeSlots.set(i, classIndex);
 
+                // Check if a break has already been scheduled
                 if (!breakScheduled && i == BREAK_SLOT) {
                     timeSlots.set(i, -2); // Schedule a break
                     if (backtrack(classIndex, true)) // Continue scheduling the same class after the break
@@ -85,6 +88,7 @@ public class ScheduleService {
                 if (backtrack(classIndex + 1, breakScheduled)) // Move to the next class
                     return true;
 
+                    // Backtrack if scheduling fails
                 timeSlots.set(i, -1); // Backtrack
             }
         }
@@ -95,7 +99,8 @@ public class ScheduleService {
     public List<String> generateSchedule(String section, String schoolYear, String gradeLevel) {
         // Check if a schedule already exists for the given section and school year
         if (scheduleRepository.findBySectionAndSchoolYear(section, schoolYear).size() > 0) {
-            throw new IllegalStateException("A schedule already exists for section '" + section + "' in the school year '" + schoolYear + "'.");
+            throw new IllegalStateException(
+                    "A schedule already exists for section '" + section + "' in the school year '" + schoolYear + "'.");
         }
 
         List<String> scheduleOutput = new ArrayList<>();
@@ -167,7 +172,8 @@ public class ScheduleService {
         return scheduleOutput;
     }
 
-    public void saveScheduleWithSubSubjects(String selectedSection, String selectedSchoolYear, String selectedRoom, String selectedGradeLevel) {
+    public void saveScheduleWithSubSubjects(String selectedSection, String selectedSchoolYear, String selectedRoom,
+            String selectedGradeLevel) {
         if (currentSchedule.isEmpty()) {
             throw new IllegalStateException("No schedule has been generated to save.");
         }
@@ -212,30 +218,37 @@ public class ScheduleService {
                 if (subSubject != null) {
                     switch (subSubject) {
                         case "ICT":
-                            labRoom = roomRepository.findFirstByLabType("ICT").map(Room::getName).orElse("Default ICT Lab");
+                            labRoom = roomRepository.findFirstByLabType("ICT").map(Room::getName)
+                                    .orElse("Default ICT Lab");
                             break;
                         case "Home Economics":
-                            labRoom = roomRepository.findFirstByLabType("Home Economics").map(Room::getName).orElse("Default Home Economics Lab");
+                            labRoom = roomRepository.findFirstByLabType("Home Economics").map(Room::getName)
+                                    .orElse("Default Home Economics Lab");
                             break;
                         case "Agriculture":
-                            labRoom = roomRepository.findFirstByLabType("Agriculture").map(Room::getName).orElse("Default Agriculture Lab");
+                            labRoom = roomRepository.findFirstByLabType("Agriculture").map(Room::getName)
+                                    .orElse("Default Agriculture Lab");
                             break;
                         case "Science":
-                            labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName).orElse("Default Science Lab");
+                            labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName)
+                                    .orElse("Default Science Lab");
                             break;
                         case "Industrial Arts":
-                            labRoom = roomRepository.findFirstByLabType("Industrial Arts").map(Room::getName).orElse("Default Industrial Arts Lab");
+                            labRoom = roomRepository.findFirstByLabType("Industrial Arts").map(Room::getName)
+                                    .orElse("Default Industrial Arts Lab");
                             break;
                     }
                 }
 
                 if ("Science".equals(subject)) {
                     // Directly assign a science lab room for Science
-                    labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName).orElse("Default Science Lab");
+                    labRoom = roomRepository.findFirstByLabType("Science").map(Room::getName)
+                            .orElse("Default Science Lab");
                 }
 
                 // Save the schedule with the lab room
-                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection, selectedSchoolYear, selectedRoom, selectedGradeLevel, subSubject));
+                scheduleRepository.save(new Schedule(parts[0] + " - " + parts[1], subject, selectedSection,
+                        selectedSchoolYear, selectedRoom, selectedGradeLevel, subSubject));
             }
         }
     }
@@ -260,7 +273,8 @@ public class ScheduleService {
         return scheduleRepository.findByGradeLevel(gradeLevel);
     }
 
-    public List<Schedule> getSchedulesBySectionSchoolYearAndGradeLevel(String section, String schoolYear, String gradeLevel) {
+    public List<Schedule> getSchedulesBySectionSchoolYearAndGradeLevel(String section, String schoolYear,
+            String gradeLevel) {
         return scheduleRepository.findBySectionAndSchoolYearAndGradeLevel(section, schoolYear, gradeLevel);
     }
 
@@ -289,15 +303,17 @@ public class ScheduleService {
     }
 
     public void autoAssignTeachers(String section, String schoolYear, String gradeLevel) {
+        // Check if a schedule already exists for the given section and school year
         List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
         if (schedules.isEmpty()) {
             throw new IllegalStateException("No schedules found for the selected filters.");
         }
 
+        // Get all teachers assigned to Homeroom classes
         Set<Integer> assignedHomeroomTeachers = scheduleRepository.findAll().stream()
-            .filter(schedule -> "Homeroom".equals(schedule.getSubject()) && schedule.getTeacher() != null)
-            .map(schedule -> schedule.getTeacher().getId())
-            .collect(Collectors.toSet());
+                .filter(schedule -> "Homeroom".equals(schedule.getSubject()) && schedule.getTeacher() != null)
+                .map(schedule -> schedule.getTeacher().getId())
+                .collect(Collectors.toSet());
 
         for (Schedule schedule : schedules) {
             // Skip schedules that already have an assigned teacher
@@ -309,21 +325,24 @@ public class ScheduleService {
             List<Teacher> teachers;
 
             if ("Homeroom".equals(subject)) {
-                // For Homeroom, select any teacher from the selected grade level who is not already assigned
+                // For Homeroom, select any teacher from the selected grade level who is not
+                // already assigned
                 teachers = teacherRepository.findAll().stream()
-                    .filter(teacher -> teacher.getGradeLevels() != null &&
-                            List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check for exact match
-                    .filter(teacher -> !assignedHomeroomTeachers.contains(teacher.getId()))
-                    .collect(Collectors.toList());
+                        .filter(teacher -> teacher.getGradeLevels() != null &&
+                                List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check
+                                                                                                   // for exact match
+                        .filter(teacher -> !assignedHomeroomTeachers.contains(teacher.getId()))
+                        .collect(Collectors.toList());
             } else {
                 // For other subjects, filter teachers by subject and grade level
                 if (subject.startsWith("TLE")) {
                     subject = "TLE"; // Treat all TLE subjects as "TLE"
                 }
                 teachers = teacherRepository.findBySubjectsContaining(subject).stream()
-                    .filter(teacher -> teacher.getGradeLevels() != null &&
-                            List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check for exact match
-                    .collect(Collectors.toList());
+                        .filter(teacher -> teacher.getGradeLevels() != null &&
+                                List.of(teacher.getGradeLevels().split(",")).contains(gradeLevel)) // Split and check
+                                                                                                   // for exact match
+                        .collect(Collectors.toList());
             }
 
             boolean teacherAssigned = false;
@@ -352,7 +371,8 @@ public class ScheduleService {
     public void autoAssignLabRooms(String section, String schoolYear, String gradeLevel) {
         List<Schedule> schedules = getFilteredSchedules(section, schoolYear, gradeLevel);
         List<Room> labRooms = roomRepository.findAll().stream()
-                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty()) // Filter rooms with lab types
+                .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty()) // Filter rooms with lab
+                                                                                           // types
                 .collect(Collectors.toList());
 
         if (schedules.isEmpty() || labRooms.isEmpty()) {

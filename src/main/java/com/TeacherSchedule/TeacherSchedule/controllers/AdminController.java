@@ -155,8 +155,21 @@ public class AdminController {
             sectionCountByGrade.put(entry.getKey(), entry.getValue().size());
         }
 
-        // Add the section count map to the model
+        // Create a map to store the count of available rooms for each grade level
+        Map<String, Long> availableRoomsByGrade = new HashMap<>();
+
+        for (String gradeLevel : sectionsByGrade.keySet()) {
+            long availableRooms = roomRepository.findAll().stream()
+                .filter(room -> room.getLabType() == null || room.getLabType().isEmpty()) // General rooms only
+                .filter(room -> scheduleService.getAllSchedules().stream()
+                    .noneMatch(schedule -> room.getName().equals(schedule.getRoom()) && gradeLevel.equals(schedule.getGradeLevel())))
+                .count();
+            availableRoomsByGrade.put(gradeLevel, availableRooms);
+        }
+
+        // Add the section count and available rooms map to the model
         model.addAttribute("sectionCountByGrade", sectionCountByGrade);
+        model.addAttribute("availableRoomsByGrade", availableRoomsByGrade);
     }
     // Show add form
     @GetMapping("/add")
