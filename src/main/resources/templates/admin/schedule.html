@@ -116,9 +116,14 @@
                 <label for="gradeLevel" class="form-label">Select Grade Level</label>
                 <select name="gradeLevel" id="gradeLevel" class="form-select" form="generateForm" required>
                     <option value="" disabled>Select Grade</option>
-                    <option th:each="grade : ${#numbers.sequence(1, 10)}" th:value="${'Grade ' + grade}"
-                        th:text="${'Grade ' + grade}" th:selected="${selectedGradeLevel == 'Grade ' + grade}">
-                    </option>
+                    <optgroup label="Grade School">
+                        <option th:each="grade : ${#numbers.sequence(1, 6)}" th:value="${'Grade ' + grade}" th:text="${'Grade ' + grade}" th:selected="${selectedGradeLevel == 'Grade ' + grade}">
+                        </option>
+                    </optgroup>
+                    <optgroup label="Junior High School">
+                        <option th:each="grade : ${#numbers.sequence(7, 10)}" th:value="${'Grade ' + grade}" th:text="${'Grade ' + grade}" th:selected="${selectedGradeLevel == 'Grade ' + grade}">
+                        </option>
+                    </optgroup>
                 </select>
             </div>
         </div>

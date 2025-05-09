@@ -26,6 +26,7 @@ public class Teacher {
 
     private LocalDate createdAt;
 
+    private String educationalBackground;
 
     public int getId() {
         return id;
@@ -121,6 +122,14 @@ public class Teacher {
 
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getEducationalBackground() {
+        return educationalBackground;
+    }
+
+    public void setEducationalBackground(String educationalBackground) {
+        this.educationalBackground = educationalBackground;
     }
 }
 
