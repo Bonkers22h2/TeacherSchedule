@@ -234,21 +234,25 @@ public class ScheduleService {
         } else {
             return scheduleRepository.findAll(); // Default to all schedules
         }
-    }
+    } 
 
     public List<Schedule> getSchedulesByTeacher(Teacher teacher) {
         return scheduleRepository.findByTeacher(teacher);
     }
 
-    public void autoAssignTeachers(String section) {
-        String currentSchoolYear = getCurrentSchoolYear();
-        List<Schedule> schedules = getSchedulesBySectionAndSchoolYear(section, currentSchoolYear);
+    public List<Schedule> getSchedulesBySchoolYear(String schoolYear) {
+        return scheduleRepository.findBySchoolYear(schoolYear);
+    }
+
+    public void autoAssignTeachers(String section, String schoolYear) {
+        List<Schedule> schedules = getSchedulesBySectionAndSchoolYear(section, schoolYear);
         if (schedules.isEmpty()) {
-            throw new IllegalStateException("No schedules found for the selected section and current school year.");
+            throw new IllegalStateException("No schedules found for the selected section and school year.");
         }
 
         Set<Integer> assignedHomeroomTeachers = scheduleRepository.findAll().stream()
                 .filter(schedule -> "Homeroom".equals(schedule.getSubject()) && schedule.getTeacher() != null)
+                .filter(schedule -> schoolYear.equals(schedule.getSchoolYear())) // Check only for the current school year
                 .map(schedule -> schedule.getTeacher().getId())
                 .collect(Collectors.toSet());
 
@@ -274,7 +278,10 @@ public class ScheduleService {
             boolean teacherAssigned = false;
 
             for (Teacher teacher : teachers) {
-                boolean conflict = scheduleRepository.existsByTimeSlotAndTeacher(schedule.getTimeSlot(), teacher);
+                boolean conflict = scheduleRepository.findAll().stream()
+                        .filter(s -> schoolYear.equals(s.getSchoolYear())) // Check only for the current school year
+                        .anyMatch(s -> s.getTeacher() != null && s.getTeacher().getId() == teacher.getId() &&
+                                overlaps(s.getTimeSlot(), schedule.getTimeSlot()));
                 if (!conflict) {
                     schedule.setTeacher(teacher);
                     if ("Homeroom".equals(subject)) {
@@ -293,9 +300,8 @@ public class ScheduleService {
         }
     }
 
-    public void autoAssignLabRooms(String section) {
-        String currentSchoolYear = getCurrentSchoolYear();
-        List<Schedule> schedules = getSchedulesBySectionAndSchoolYear(section, currentSchoolYear);
+    public void autoAssignLabRooms(String section, String schoolYear) {
+        List<Schedule> schedules = getSchedulesBySectionAndSchoolYear(section, schoolYear);
         List<Room> labRooms = roomRepository.findAll().stream()
                 .filter(room -> room.getLabType() != null && !room.getLabType().isEmpty())
                 .collect(Collectors.toList());

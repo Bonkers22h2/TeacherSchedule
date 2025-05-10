@@ -76,8 +76,17 @@
                             <input type="text" name="email" class="form-control p-3" placeholder="Username or Email" required>
                         </div>
                         <!-- Password Field -->
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <input type="password" name="password" class="form-control p-3" placeholder="Password" required>
+                        </div>
+                        <!-- School Year Dropdown -->
+                        <div class="mb-4">
+                            <label for="schoolYear" class="form-label">Select School Year</label>
+                            <select name="schoolYear" id="schoolYear" class="form-select" required>
+                                <option value="" disabled selected>Select School Year</option>
+                                <option th:each="schoolYear : ${schoolYears}" th:value="${schoolYear.year}" th:text="${schoolYear.year}">
+                                </option>
+                            </select>
                         </div>
                         <!-- Error Message -->
                         <div th:if="${error}" class="text-danger mb-3" th:text="${error}"></div>

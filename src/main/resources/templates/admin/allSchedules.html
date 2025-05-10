@@ -119,6 +119,7 @@
                     </select>
                 </div>
             </div>
+            <input type="hidden" name="schoolYear" th:value="${selectedSchoolYear}" /> <!-- Include current school year -->
             <button type="submit" class="btn btn-primary mb-3 w-100">Show Schedule</button>
         </form>
 
@@ -126,7 +127,7 @@
             <div class="col">
                 <form id="assignForm" action="/teachers/autoAssignTeacher" method="POST" class="mb-4">
                     <input type="hidden" name="section" id="assignSection" th:value="${selectedSection}">
-                    <input type="hidden" name="schoolYear" id="assignSchoolYear" th:value="${selectedSchoolYear}">
+                    <input type="hidden" name="schoolYear" id="assignSchoolYear" th:value="${selectedSchoolYear}"> <!-- Include current school year -->
                     <input type="hidden" name="gradeLevel" id="assignGradeLevel" th:value="${selectedGradeLevel}">
                     <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
                 </form>
@@ -134,7 +135,7 @@
             <div class="col">
                 <form id="assignLabRoomForm" action="/teachers/autoAssignLabRoom" method="POST" class="mb-4">
                     <input type="hidden" name="section" id="assignLabRoomSection" th:value="${selectedSection}">
-                    <input type="hidden" name="schoolYear" id="assignLabRoomSchoolYear" th:value="${selectedSchoolYear}">
+                    <input type="hidden" name="schoolYear" id="assignLabRoomSchoolYear" th:value="${selectedSchoolYear}"> <!-- Include current school year -->
                     <input type="hidden" name="gradeLevel" id="assignLabRoomGradeLevel" th:value="${selectedGradeLevel}">
                     <button type="button" class="btn btn-info mb-3 w-100" onclick="submitAssignLabRoomForm()">Auto-Assign Lab Room</button>
                 </form>
@@ -171,19 +172,22 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Display All Schedules -->
-                <tr th:each="schedule : ${schedules}">
+                <!-- Display All Schedules for the Current School Year -->
+                <tr th:each="schedule : ${schedules}" th:if="${schedule.schoolYear == selectedSchoolYear}">
                     <td th:text="${schedule.timeSlot}"></td>
                     <td th:text="${schedule.subject}"></td>
                     <td th:text="${schedule.subSubject != null ? schedule.subSubject : 'None'}"></td> <!-- Sub-Subject -->
                     <td th:text="${schedule.section}"></td>
-                    <td th:text="${schedule.room != null ? schedule.room : 'No Assigned Room'}"></td> <!-- Dynamically display room -->
-                    <td th:text="${schedule.labRoom != null ? schedule.labRoom : 'No Assigned Lab Room'}"></td> <!-- Lab Room -->
+                    <td th:text="${schedule.room != null ? schedule.room : 'No Assigned Room'}"></td>
+                    <td th:text="${schedule.labRoom != null ? schedule.labRoom : 'No Assigned Lab Room'}"></td>
                     <td th:text="${schedule.schoolYear}"></td>
                     <td th:text="${schedule.gradeLevel}"></td>
                     <td th:classappend="${schedule.teacher == null ? 'text-danger' : ''}" 
                         th:text="${schedule.teacher != null ? schedule.teacher.firstName + ' ' + schedule.teacher.lastName : 'No Assigned Teacher'}">
                     </td>
+                </tr>
+                <tr th:if="${schedules == null or schedules.empty}">
+                    <td colspan="9" class="text-center">No schedules available for the current school year.</td>
                 </tr>
             </tbody>
         </table>

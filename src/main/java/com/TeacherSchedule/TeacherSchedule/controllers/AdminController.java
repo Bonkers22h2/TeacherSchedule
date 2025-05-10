@@ -97,8 +97,16 @@ public class AdminController {
             model.addAttribute("teacherName", teacherName); // Pass to template
             return "teacher/index";
         }
-        
 
+        // Fetch the current school year from the session
+        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = schoolYearRepository.findAll().stream()
+                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                    .map(SchoolYear::getYear)
+                    .orElse("No School Year Available");
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
 
         List<Teacher> teachers = repo.findAll();
         if (teachers == null || teachers.isEmpty()) {
@@ -126,11 +134,7 @@ public class AdminController {
         model.addAttribute("teachersPresent", teachersPresent);
         addSectionCountToModel(model);
 
-        // Fetch the current school year
-        String currentSchoolYear = schoolYearRepository.findAll().stream()
-                .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
-                .map(sy -> sy.getYear())
-                .orElse("No School Year Available");
+        // Pass the current school year to the dashboard
         model.addAttribute("currentSchoolYear", currentSchoolYear);
 
         return "admin/index";
@@ -283,41 +287,37 @@ public class AdminController {
             return "redirect:/signin";
         }
 
-        List<String> schedule = scheduleService.getCurrentSchedule();
+        // Fetch the current school year
+        String currentSchoolYear = schoolYearRepository.findAll().stream()
+                .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                .map(SchoolYear::getYear)
+                .orElse("No School Year Available");
 
-        // Validate schedule format
-        for (int i = 0; i < schedule.size(); i++) {
-            String[] parts = schedule.get(i).split(" - ");
-            if (parts.length < 4) {
-                schedule.set(i, schedule.get(i) + " - Unknown Section"); // Add default section if missing
-            }
-        }
-
-        // Fetch all sections and filter out those already in the schedule
-        List<String> unavailableSections = scheduleService.getAllSchedules().stream()
+        // Fetch all sections and filter out those already in the schedule for the current school year
+        List<String> unavailableSections = scheduleService.getSchedulesBySchoolYear(currentSchoolYear).stream()
                 .map(Schedule::getSection)
-                .filter(section -> section != null) // Ensure null values are ignored
+                .filter(section -> section != null)
                 .collect(Collectors.toList());
         List<Section> availableSections = sectionRepository.findAll().stream()
-                .filter(section -> !unavailableSections.contains(section.getName())) // Exclude sections already in the schedule
+                .filter(section -> !unavailableSections.contains(section.getName()))
                 .collect(Collectors.toList());
 
-        // Fetch all rooms and filter out those already in the schedule or with lab_type not null/none
-        List<String> unavailableRooms = scheduleService.getAllSchedules().stream()
+        // Fetch all rooms and filter out those already in the schedule for the current school year
+        List<String> unavailableRooms = scheduleService.getSchedulesBySchoolYear(currentSchoolYear).stream()
                 .map(Schedule::getRoom)
-                .filter(room -> room != null) // Ensure null values are ignored
+                .filter(room -> room != null)
                 .collect(Collectors.toList());
         List<Room> availableRooms = roomRepository.findAll().stream()
-                .filter(room -> (room.getLabType() == null || room.getLabType().trim().equalsIgnoreCase("")) // Include only general rooms
-                        && !unavailableRooms.contains(room.getName())) // Exclude rooms already in the schedule
+                .filter(room -> (room.getLabType() == null || room.getLabType().trim().isEmpty())
+                        && !unavailableRooms.contains(room.getName()))
                 .collect(Collectors.toList());
 
-        model.addAttribute("schedule", schedule);
-        model.addAttribute("sections", availableSections); // Pass only available sections
+        model.addAttribute("schedule", scheduleService.getCurrentSchedule());
+        model.addAttribute("sections", availableSections);
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
-        model.addAttribute("rooms", availableRooms); // Pass only available rooms
+        model.addAttribute("rooms", availableRooms);
         model.addAttribute("selectedSection", selectedSection);
-        model.addAttribute("selectedSchoolYear", selectedSchoolYear);
+        model.addAttribute("selectedSchoolYear", currentSchoolYear); // Use current school year as default
         model.addAttribute("selectedRoom", selectedRoom);
         return "admin/schedule";
     }
@@ -332,17 +332,15 @@ public class AdminController {
             return "redirect:/signin";
         }
 
-        // Check if a schedule already exists
-        if (!scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel).isEmpty()) {
-            model.addAttribute("error", "A schedule already exists for the selected section, school year, and grade level.");
-            model.addAttribute("sections", sectionRepository.findAll());
-            model.addAttribute("schoolYears", schoolYearRepository.findAll());
-            model.addAttribute("rooms", roomRepository.findAll());
-            model.addAttribute("selectedSection", section);
-            model.addAttribute("selectedSchoolYear", schoolYear);
-            model.addAttribute("selectedRoom", room);
-            model.addAttribute("selectedGradeLevel", gradeLevel);
-            return "admin/schedule";
+        // Ensure the school year is the current one
+        String currentSchoolYear = schoolYearRepository.findAll().stream()
+                .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                .map(SchoolYear::getYear)
+                .orElseThrow(() -> new IllegalStateException("No current school year found."));
+
+        if (!schoolYear.equals(currentSchoolYear)) {
+            model.addAttribute("error", "You can only generate schedules for the current school year.");
+            return "redirect:/teachers/schedule";
         }
 
         try {
@@ -416,7 +414,22 @@ public class AdminController {
             return "redirect:/signin";
         }
 
-        List<Schedule> schedules = scheduleService.getAllSchedules();
+        // Fetch the current school year from the session
+        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = schoolYearRepository.findAll().stream()
+                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                    .map(SchoolYear::getYear)
+                    .orElse("No School Year Available");
+            session.setAttribute("currentSchoolYear", currentSchoolYear); // Set default if not already set
+        }
+
+        // Default to the current school year if none is selected
+        if (selectedSchoolYear == null || selectedSchoolYear.isEmpty()) {
+            selectedSchoolYear = currentSchoolYear;
+        }
+
+        List<Schedule> schedules = scheduleService.getSchedulesBySchoolYear(selectedSchoolYear);
         model.addAttribute("schedules", schedules);
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
@@ -596,9 +609,16 @@ public String showArchivedTeachers(Model model, HttpSession session) {
 
     @PostMapping("/autoAssignTeacher")
     public String autoAssignTeachers(@RequestParam(value = "section", required = false) String section,
+                                      @RequestParam(value = "schoolYear", required = false) String schoolYear,
                                       RedirectAttributes redirectAttributes) {
         try {
-            scheduleService.autoAssignTeachers(section);
+            if (schoolYear == null || schoolYear.isEmpty()) {
+                schoolYear = schoolYearRepository.findAll().stream()
+                        .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                        .map(SchoolYear::getYear)
+                        .orElseThrow(() -> new IllegalStateException("No current school year found."));
+            }
+            scheduleService.autoAssignTeachers(section, schoolYear); // Pass schoolYear to the service
             redirectAttributes.addFlashAttribute("successMessage", "Teachers successfully assigned!");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -610,9 +630,16 @@ public String showArchivedTeachers(Model model, HttpSession session) {
 
     @PostMapping("/autoAssignLabRoom")
     public String autoAssignLabRoom(@RequestParam(value = "section", required = false) String section,
+                                    @RequestParam(value = "schoolYear", required = false) String schoolYear,
                                     RedirectAttributes redirectAttributes) {
         try {
-            scheduleService.autoAssignLabRooms(section);
+            if (schoolYear == null || schoolYear.isEmpty()) {
+                schoolYear = schoolYearRepository.findAll().stream()
+                        .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                        .map(SchoolYear::getYear)
+                        .orElseThrow(() -> new IllegalStateException("No current school year found."));
+            }
+            scheduleService.autoAssignLabRooms(section, schoolYear); // Pass schoolYear to the service
             redirectAttributes.addFlashAttribute("successMessage", "Lab rooms successfully assigned!");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());

@@ -263,15 +263,18 @@ public class ManageController {
     }
 
     @PostMapping("/nextSchoolYear")
-    public String goToNextSchoolYear(RedirectAttributes redirectAttributes) {
+    public String goToNextSchoolYear(@RequestParam(value = "removeArchivedSchedules", required = false) boolean removeArchivedSchedules,
+                                     RedirectAttributes redirectAttributes) {
         try {
-            // Archive all schedules before proceeding to the next school year
-            List<Schedule> schedules = scheduleService.getAllSchedules();
-            if (!schedules.isEmpty()) {
-                for (Schedule schedule : schedules) {
-                    ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
-                    archivedScheduleRepository.save(archivedSchedule);
-                    scheduleService.deleteSchedule(schedule.getId());
+            if (!removeArchivedSchedules) {
+                // Archive all schedules before proceeding to the next school year
+                List<Schedule> schedules = scheduleService.getAllSchedules();
+                if (!schedules.isEmpty()) {
+                    for (Schedule schedule : schedules) {
+                        ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
+                        archivedScheduleRepository.save(archivedSchedule);
+                        scheduleService.deleteSchedule(schedule.getId());
+                    }
                 }
             }
 
@@ -292,7 +295,8 @@ public class ManageController {
             String nextSchoolYear = startYear + "-" + endYear;
 
             // Save the next school year
-            SchoolYear newSchoolYear = new SchoolYear(nextSchoolYear);
+            SchoolYear newSchoolYear = new SchoolYear();
+            newSchoolYear.setYear(nextSchoolYear); // Use setter instead of constructor
             schoolYearRepository.save(newSchoolYear);
 
             redirectAttributes.addFlashAttribute("successMessage", "Successfully moved to the next school year: " + nextSchoolYear);

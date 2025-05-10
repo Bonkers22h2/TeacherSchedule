@@ -96,6 +96,7 @@
 
         <!-- Next School Year Button -->
         <form action="/teachers/manage/nextSchoolYear" method="POST" class="mb-4" onsubmit="return confirmPassword();">
+            <input type="hidden" name="removeArchivedSchedules" value="true">
             <button type="submit" class="btn btn-success w-100 mt-5">Go to Next School Year</button>
         </form>
 
