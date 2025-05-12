@@ -10,6 +10,8 @@ public class Section {
 
     private String name;
 
+    private String schoolYear; // Add this field
+
     public Section() {
         // Default constructor
     }
@@ -32,5 +34,13 @@ public class Section {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSchoolYear() {
+        return schoolYear;
+    }
+
+    public void setSchoolYear(String schoolYear) {
+        this.schoolYear = schoolYear;
     }
 }

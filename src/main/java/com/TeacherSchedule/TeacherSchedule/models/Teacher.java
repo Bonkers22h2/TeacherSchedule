@@ -28,6 +28,8 @@ public class Teacher {
 
     private String educationalBackground;
 
+    private String schoolYear;
+
     public int getId() {
         return id;
     }
@@ -130,6 +132,14 @@ public class Teacher {
 
     public void setEducationalBackground(String educationalBackground) {
         this.educationalBackground = educationalBackground;
+    }
+
+    public String getSchoolYear() {
+        return schoolYear;
+    }
+
+    public void setSchoolYear(String schoolYear) {
+        this.schoolYear = schoolYear;
     }
 }
 

@@ -75,47 +75,67 @@ public class AdminController {
     public String showTeacherList(Model model, HttpSession session) {
         String role = (String) session.getAttribute("role");
 
+        // --- Show allEntities.html ONCE at the start of a new school year ---
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        String allEntitiesFlag = "allEntitiesShown_" + currentSchoolYear;
+        if ("admin".equals(role) && session.getAttribute(allEntitiesFlag) == null) {
+            session.setAttribute(allEntitiesFlag, true);
+            return "redirect:/teachers/allEntities";
+        }
+
         if ("teacher".equals(role)) {
             Integer teacherId = (Integer) session.getAttribute("teacherId");
             if (teacherId == null) {
                 return "redirect:/signin";
             }
-    
+
             // Fetch the teacher entity
             Teacher teacher = repo.findById(teacherId).orElse(null);
             if (teacher == null) {
                 return "redirect:/signin";
             }
-    
+
             // Fetch the current school year from the database
-            String currentSchoolYear = schoolYearRepository.findAll().stream()
+            final String teacherSchoolYear = schoolYearRepository.findAll().stream()
                     .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
                     .map(SchoolYear::getYear)
                     .orElse("No School Year Available");
-            session.setAttribute("currentSchoolYear", currentSchoolYear);
-    
+            session.setAttribute("currentSchoolYear", teacherSchoolYear);
+
             // Filter schedules for the current school year
             List<Schedule> schedules = scheduleService.getSchedulesByTeacher(teacher).stream()
-                    .filter(schedule -> currentSchoolYear.equals(schedule.getSchoolYear()))
+                    .filter(schedule -> teacherSchoolYear.equals(schedule.getSchoolYear()))
                     .collect(Collectors.toList());
-            
+
             // Derive teacherName from the Teacher entity
-            String teacherName = teacher.getFirstName() + " " + teacher.getLastName(); // ✅ Get from entity
-            
+            String teacherName = teacher.getFirstName() + " " + teacher.getLastName();
+
             model.addAttribute("schedules", schedules);
-            model.addAttribute("teacherName", teacherName); // Pass to template
-            model.addAttribute("currentSchoolYear", currentSchoolYear); // Pass to template
+            model.addAttribute("teacherName", teacherName);
+            model.addAttribute("currentSchoolYear", teacherSchoolYear);
             return "teacher/index";
         }
 
         // Fetch the current school year from the session
-        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
-        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
-            currentSchoolYear = scheduleService.getCurrentSchoolYear();
-            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        String filteredSchoolYear;
+        {
+            String tempSchoolYear = (String) session.getAttribute("currentSchoolYear");
+            if (tempSchoolYear == null || tempSchoolYear.isEmpty()) {
+                tempSchoolYear = scheduleService.getCurrentSchoolYear();
+                session.setAttribute("currentSchoolYear", tempSchoolYear);
+            }
+            filteredSchoolYear = tempSchoolYear;
         }
 
-        List<Teacher> teachers = repo.findAll();
+        // Filter teachers by current school year
+        List<Teacher> teachers = repo.findAll().stream()
+            .filter(t -> filteredSchoolYear.equals(t.getSchoolYear()))
+            .collect(Collectors.toList());
         if (teachers == null || teachers.isEmpty()) {
             model.addAttribute("error", "No teachers found.");
             model.addAttribute("teacherCount", 0);
@@ -780,6 +800,86 @@ public String showArchivedTeachers(Model model, HttpSession session) {
 
         redirectAttributes.addFlashAttribute("successMessage", "Schedule archived successfully.");
         return "redirect:/teachers/allSchedules";
+    }
+
+    @GetMapping("/allEntities")
+    public String showAllEntities(Model model, HttpSession session) {
+        if (!"admin".equals(session.getAttribute("role"))) {
+            return "redirect:/signin";
+        }
+        model.addAttribute("sections", sectionRepository.findAll());
+        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("teachers", repo.findAll());
+        return "admin/allEntities";
+    }
+
+    @PostMapping("/allEntities/keep")
+    public String keepEntitiesForNewSchoolYear(
+            @RequestParam(value = "keepSections", required = false) List<Long> keepSectionIds,
+            @RequestParam(value = "keepRooms", required = false) List<Long> keepRoomIds,
+            @RequestParam(value = "keepTeachers", required = false) List<Integer> keepTeacherIds,
+            HttpSession session, RedirectAttributes redirectAttributes) {
+
+        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+
+        // --- Sections ---
+        List<Section> allSections = sectionRepository.findAll();
+        if (keepSectionIds != null) {
+            for (Section section : allSections) {
+                if (keepSectionIds.contains(section.getId())) {
+                    // Duplicate or update for new school year
+                    Section newSection = new Section();
+                    newSection.setName(section.getName());
+                    newSection.setSchoolYear(currentSchoolYear);
+                    sectionRepository.save(newSection);
+                }
+            }
+        }
+
+        // --- Rooms ---
+        List<Room> allRooms = roomRepository.findAll();
+        if (keepRoomIds != null) {
+            for (Room room : allRooms) {
+                if (keepRoomIds.contains(room.getId())) {
+                    Room newRoom = new Room();
+                    newRoom.setName(room.getName());
+                    newRoom.setLabType(room.getLabType());
+                    newRoom.setSchoolYear(currentSchoolYear);
+                    roomRepository.save(newRoom);
+                }
+            }
+        }
+
+        // --- Teachers ---
+        List<Teacher> allTeachers = repo.findAll();
+        if (keepTeacherIds != null) {
+            for (Teacher teacher : allTeachers) {
+                if (keepTeacherIds.contains(teacher.getId())) {
+                    Teacher newTeacher = new Teacher();
+                    newTeacher.setFirstName(teacher.getFirstName());
+                    newTeacher.setLastName(teacher.getLastName());
+                    newTeacher.setMiddleName(teacher.getMiddleName());
+                    newTeacher.setGender(teacher.getGender());
+                    newTeacher.setBirthDate(teacher.getBirthDate());
+                    newTeacher.setContactNumber(teacher.getContactNumber());
+                    newTeacher.setEmail(teacher.getEmail());
+                    newTeacher.setAddress(teacher.getAddress());
+                    newTeacher.setSubjects(teacher.getSubjects());
+                    newTeacher.setYearsOfExperience(teacher.getYearsOfExperience());
+                    newTeacher.setCreatedAt(teacher.getCreatedAt());
+                    newTeacher.setEducationalBackground(teacher.getEducationalBackground());
+                    newTeacher.setSchoolYear(currentSchoolYear);
+                    repo.save(newTeacher);
+                }
+            }
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", "Entities kept for the new school year.");
+        return "redirect:/teachers";
     }
 
 }

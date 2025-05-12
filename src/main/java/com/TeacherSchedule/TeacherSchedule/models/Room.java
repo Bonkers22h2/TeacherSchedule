@@ -14,6 +14,8 @@ public class Room {
     @Column(name = "lab_type") // Map to the correct column in the database
     private String labType;
 
+    private String schoolYear; // Add this field
+
     // Getters and setters
     public Long getId() {
         return id;
@@ -37,5 +39,13 @@ public class Room {
 
     public void setLabType(String labType) {
         this.labType = labType;
+    }
+
+    public String getSchoolYear() {
+        return schoolYear;
+    }
+
+    public void setSchoolYear(String schoolYear) {
+        this.schoolYear = schoolYear;
     }
 }
