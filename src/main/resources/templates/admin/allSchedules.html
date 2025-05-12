@@ -144,14 +144,6 @@
 
         <div class="row">
             <div class="col">
-                <form id="archiveSchedulesForm" action="/teachers/archiveSchedules" method="POST" onsubmit="return confirmArchive();">
-                    <input type="hidden" name="section" id="archiveSection" th:value="${selectedSection}">
-                    <input type="hidden" name="schoolYear" id="archiveSchoolYear" th:value="${selectedSchoolYear}">
-                    <input type="hidden" name="gradeLevel" id="archiveGradeLevel" th:value="${selectedGradeLevel}">
-                    <button type="submit" class="btn btn-danger mb-3 w-100">Archive Filtered Schedules</button>
-                </form>
-            </div>
-            <div class="col">
                 <a href="/teachers/archivedSchedules" class="btn btn-secondary mb-3 w-100">View Archived Schedules</a>
             </div>
         </div>

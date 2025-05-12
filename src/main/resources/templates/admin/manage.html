@@ -4,32 +4,34 @@
 <div th:replace="~{fragments/head :: head('Manage')}"></div>
 <style>
     body {
-            background-color: #00ffcc;
-            /* Darker shade of green */
-            min-height: 100vh;
-            max-height: 1200px;
-            background-image: url('/images/4931029.jpg');
-            background-position: center;
-            background-size: cover;
-            backdrop-filter: blur(5px);
-            /* Add a dark overlay */
-            position: relative;
-        }
+        background-color: #00ffcc;
+        /* Darker shade of green */
+        min-height: 100vh;
+        max-height: 1200px;
+        background-image: url('/images/4931029.jpg');
+        background-position: center;
+        background-size: cover;
+        backdrop-filter: blur(5px);
+        /* Add a dark overlay */
+        position: relative;
+    }
 
-        .container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border: #333 solid 3px;
-            margin-bottom: 50px; /* Add margin-bottom for spacing */
-        }
+    .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border: #333 solid 3px;
+        margin-bottom: 50px;
+        /* Add margin-bottom for spacing */
+    }
 
-        .table-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
 </style>
+
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container mt-5 mb-5">
@@ -47,9 +49,8 @@
 
         <!-- Buttons to toggle tables -->
         <div class="d-flex justify-content-center mb-4">
-            <button class="btn btn-primary mx-2" onclick="toggleTable('roomsTable')">Manage Rooms</button>
-            <button class="btn btn-primary mx-2" onclick="toggleTable('schoolYearsTable')">Manage School Years</button>
             <button class="btn btn-primary mx-2" onclick="toggleTable('sectionsTable')">Manage Sections</button>
+            <button class="btn btn-primary mx-2" onclick="toggleTable('roomsTable')">Manage Rooms</button>
         </div>
 
         <!-- Section Form -->
@@ -72,7 +73,7 @@
             <button type="submit" class="btn btn-primary">Save School Year</button>
         </form>
 
-        
+
 
         <!-- Room Form -->
         <form action="/teachers/manage/saveRoom" method="POST">
@@ -122,9 +123,11 @@
                             <td th:text="${room.name}"></td>
                             <td th:text="${room.labType != null ? room.labType : 'None'}"></td>
                             <td>
-                                <a th:href="@{/teachers/manage/editRoom(id=${room.id})}" class="btn btn-warning btn-sm">Edit</a>
-                                <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}" class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Are you sure you want to archive this room?');">Archive</a>
+                                <a th:href="@{/teachers/manage/editRoom(id=${room.id})}"
+                                    class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure you want to archive this room?');">Archive</a>
                             </td>
                         </tr>
                     </tbody>
@@ -147,9 +150,11 @@
                         <tr th:each="schoolYear : ${schoolYears}">
                             <td th:text="${schoolYear.year}"></td>
                             <td>
-                                <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}" class="btn btn-warning btn-sm">Edit</a>
-                                <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}" class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
+                                <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}"
+                                    class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
                             </td>
                         </tr>
                     </tbody>
@@ -172,9 +177,11 @@
                         <tr th:each="section : ${sections}">
                             <td th:text="${section.name}"></td>
                             <td>
-                                <a th:href="@{/teachers/manage/editSection(id=${section.id})}" class="btn btn-warning btn-sm">Edit</a>
-                                <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}" class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Are you sure you want to archive this section?');">Archive</a>
+                                <a th:href="@{/teachers/manage/editSection(id=${section.id})}"
+                                    class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure you want to archive this section?');">Archive</a>
                             </td>
                         </tr>
                     </tbody>
@@ -203,4 +210,5 @@
         }
     </script>
 </body>
+
 </html>
