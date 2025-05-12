@@ -150,6 +150,10 @@ public class AdminController {
         
     // Count number of teachers present today
         LocalDate today = LocalDate.now();
+        List<Teacher> allTeachers = teacherRepo.findAll().stream()
+            .filter(teacher -> filteredSchoolYear.equals(teacher.getSchoolYear()))
+            .collect(Collectors.toList());
+
         List<Attendance> todaysAttendance = attendanceRepo.findAll()
             .stream()
             .filter(a -> today.equals(a.getDate()))
