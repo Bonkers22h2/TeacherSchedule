@@ -44,7 +44,7 @@ public class AuthController {
         // Validate admin credentials
         if ("admin".equals(email) && "adminadmin".equals(password)) { // Match hardcoded credentials
             session.setAttribute("role", "admin");
-            session.setAttribute("currentSchoolYear", schoolYear); // Set the selected school year as the current school year
+            session.setAttribute("currentSchoolYear", schoolYear); // Set the selected school year
             return "redirect:/teachers";
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password.");

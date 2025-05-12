@@ -20,6 +20,7 @@
     </style>
     <div class="container text-center bg-white p-4 rounded shadow" style="border: 5px solid #000000;">
         <h1 class="display-5 fw-bold mb-4">Teacher Dashboard</h1>
+        <p>Current School Year: <span th:text="${currentSchoolYear}">No School Year Available</span></p>
         <h2 class="text-success fs-4 mb-3">Welcome, <span th:text="${teacherName}">Teacher Name</span>!</h2>
         
         <!-- Schedule Table -->

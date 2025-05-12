@@ -87,24 +87,31 @@ public class AdminController {
                 return "redirect:/signin";
             }
     
-            // Get schedules for this teacher
-            List<Schedule> schedules = scheduleService.getSchedulesByTeacher(teacher);
+            // Fetch the current school year from the database
+            String currentSchoolYear = schoolYearRepository.findAll().stream()
+                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+                    .map(SchoolYear::getYear)
+                    .orElse("No School Year Available");
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+    
+            // Filter schedules for the current school year
+            List<Schedule> schedules = scheduleService.getSchedulesByTeacher(teacher).stream()
+                    .filter(schedule -> currentSchoolYear.equals(schedule.getSchoolYear()))
+                    .collect(Collectors.toList());
             
             // Derive teacherName from the Teacher entity
             String teacherName = teacher.getFirstName() + " " + teacher.getLastName(); // ✅ Get from entity
             
             model.addAttribute("schedules", schedules);
             model.addAttribute("teacherName", teacherName); // Pass to template
+            model.addAttribute("currentSchoolYear", currentSchoolYear); // Pass to template
             return "teacher/index";
         }
 
         // Fetch the current school year from the session
         String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
         if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
-            currentSchoolYear = schoolYearRepository.findAll().stream()
-                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
-                    .map(SchoolYear::getYear)
-                    .orElse("No School Year Available");
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
             session.setAttribute("currentSchoolYear", currentSchoolYear);
         }
 

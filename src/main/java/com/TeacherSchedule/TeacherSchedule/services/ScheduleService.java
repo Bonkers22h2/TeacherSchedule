@@ -327,11 +327,12 @@ public class ScheduleService {
         }
     }
 
-    private String getCurrentSchoolYear() {
+    public String getCurrentSchoolYear() {
         return scheduleRepository.findAll().stream()
                 .map(Schedule::getSchoolYear)
+                .filter(schoolYear -> schoolYear != null && !schoolYear.isEmpty())
                 .max(String::compareTo)
-                .orElseThrow(() -> new IllegalStateException("No current school year found."));
+                .orElse("No School Year Available");
     }
 
     private Room findAvailableLabRoom(Schedule schedule, List<Room> labRooms, String labType) {

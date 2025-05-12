@@ -279,30 +279,26 @@ public class ManageController {
             }
 
             // Fetch the latest school year
-            SchoolYear latestSchoolYear = schoolYearRepository.findAll().stream()
-                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
-                    .orElse(null);
-
-            if (latestSchoolYear == null) {
+            String latestSchoolYear = scheduleService.getCurrentSchoolYear();
+            if ("No School Year Available".equals(latestSchoolYear)) {
                 redirectAttributes.addFlashAttribute("errorMessage", "No school year found to proceed.");
                 return "redirect:/teachers/manage";
             }
 
             // Parse the latest school year and calculate the next one
-            String[] years = latestSchoolYear.getYear().split("-");
+            String[] years = latestSchoolYear.split("-");
             int startYear = Integer.parseInt(years[0]) + 1;
             int endYear = Integer.parseInt(years[1]) + 1;
             String nextSchoolYear = startYear + "-" + endYear;
 
             // Save the next school year
-            SchoolYear newSchoolYear = new SchoolYear();
-            newSchoolYear.setYear(nextSchoolYear); // Use setter instead of constructor
+            SchoolYear newSchoolYear = new SchoolYear(nextSchoolYear);
             schoolYearRepository.save(newSchoolYear);
 
             redirectAttributes.addFlashAttribute("successMessage", "Successfully moved to the next school year: " + nextSchoolYear);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Failed to proceed to the next school year: " + e.getMessage());
         }
-        return "redirect:/teachers/manage";
+        return "redirect:/signin";
     }
 }
