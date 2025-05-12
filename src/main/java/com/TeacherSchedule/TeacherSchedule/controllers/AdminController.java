@@ -75,15 +75,18 @@ public class AdminController {
     public String showTeacherList(Model model, HttpSession session) {
         String role = (String) session.getAttribute("role");
 
-        // --- Show allEntities.html ONCE at the start of a new school year ---
+        // --- Fetch the current school year ---
         String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
         String currentSchoolYear = sessionSchoolYear;
         if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
             currentSchoolYear = scheduleService.getCurrentSchoolYear();
             session.setAttribute("currentSchoolYear", currentSchoolYear);
         }
+
+        // --- Check if allEntities.html should be shown ---
         String allEntitiesFlag = "allEntitiesShown_" + currentSchoolYear;
-        if ("admin".equals(role) && session.getAttribute(allEntitiesFlag) == null) {
+        boolean hasSchedules = !scheduleService.getSchedulesBySchoolYear(currentSchoolYear).isEmpty();
+        if ("admin".equals(role) && session.getAttribute(allEntitiesFlag) == null && !hasSchedules) {
             session.setAttribute(allEntitiesFlag, true);
             return "redirect:/teachers/allEntities";
         }
@@ -228,8 +231,17 @@ public class AdminController {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
+        
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
 
         teacher.setCreatedAt(LocalDate.now());
+        teacher.setSchoolYear(effectiveCurrentSchoolYear); // Set the current school year
         repo.save(teacher);
         redirectAttributes.addFlashAttribute("successMessage", "Teacher successfully added.");
         return "redirect:/teachers";
@@ -315,28 +327,30 @@ public class AdminController {
         }
 
         // Fetch the current school year
-        String currentSchoolYear = schoolYearRepository.findAll().stream()
-                .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
-                .map(SchoolYear::getYear)
-                .orElse("No School Year Available");
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
 
-        // Fetch all sections and filter out those already in the schedule for the current school year
-        List<String> unavailableSections = scheduleService.getSchedulesBySchoolYear(currentSchoolYear).stream()
+        // Fetch all sections and exclude those already in a schedule for the current school year
+        List<String> scheduledSections = scheduleService.getSchedulesBySchoolYear(effectiveCurrentSchoolYear).stream()
                 .map(Schedule::getSection)
-                .filter(section -> section != null)
                 .collect(Collectors.toList());
         List<Section> availableSections = sectionRepository.findAll().stream()
-                .filter(section -> !unavailableSections.contains(section.getName()))
+                .filter(section -> effectiveCurrentSchoolYear.equals(section.getSchoolYear()))
+                .filter(section -> !scheduledSections.contains(section.getName()))
                 .collect(Collectors.toList());
 
-        // Fetch all rooms and filter out those already in the schedule for the current school year
-        List<String> unavailableRooms = scheduleService.getSchedulesBySchoolYear(currentSchoolYear).stream()
+        // Fetch all rooms and exclude those already in a schedule for the current school year
+        List<String> scheduledRooms = scheduleService.getSchedulesBySchoolYear(effectiveCurrentSchoolYear).stream()
                 .map(Schedule::getRoom)
-                .filter(room -> room != null)
                 .collect(Collectors.toList());
         List<Room> availableRooms = roomRepository.findAll().stream()
-                .filter(room -> (room.getLabType() == null || room.getLabType().trim().isEmpty())
-                        && !unavailableRooms.contains(room.getName()))
+                .filter(room -> effectiveCurrentSchoolYear.equals(room.getSchoolYear()))
+                .filter(room -> !scheduledRooms.contains(room.getName()))
                 .collect(Collectors.toList());
 
         model.addAttribute("schedule", scheduleService.getCurrentSchedule());
@@ -344,7 +358,7 @@ public class AdminController {
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("rooms", availableRooms);
         model.addAttribute("selectedSection", selectedSection);
-        model.addAttribute("selectedSchoolYear", currentSchoolYear); // Use current school year as default
+        model.addAttribute("selectedSchoolYear", effectiveCurrentSchoolYear); // Use current school year as default
         model.addAttribute("selectedRoom", selectedRoom);
         return "admin/schedule";
     }
@@ -515,10 +529,22 @@ public String showTeacherList(HttpSession session, Model model) {
         return "redirect:/signin";
     }
 
-    // Load all teachers
-    List<Teacher> allTeachers = teacherRepo.findAll();
-    if (allTeachers == null || allTeachers.isEmpty()) {
-        model.addAttribute("error", "No teachers found.");
+    // Fetch the current school year
+    String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+    String currentSchoolYear = sessionSchoolYear;
+    if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+        currentSchoolYear = scheduleService.getCurrentSchoolYear();
+        session.setAttribute("currentSchoolYear", currentSchoolYear);
+    }
+    final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
+
+    // Load teachers only for the current school year
+    List<Teacher> allTeachers = teacherRepo.findAll().stream()
+        .filter(teacher -> effectiveCurrentSchoolYear.equals(teacher.getSchoolYear()))
+        .collect(Collectors.toList());
+
+    if (allTeachers.isEmpty()) {
+        model.addAttribute("error", "No teachers found for the current school year.");
         model.addAttribute("teacherCount", 0);
         return "admin/attendance";
     } else {
@@ -619,7 +645,6 @@ public String showTeacherList(HttpSession session, Model model) {
     model.addAttribute("monthlyLate", totalLate);
     model.addAttribute("monthlyAbsent", totalAbsent);
     model.addAttribute("today", today);
-
 
     return "admin/attendance";
 }
@@ -807,10 +832,47 @@ public String showArchivedTeachers(Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
-        model.addAttribute("sections", sectionRepository.findAll());
-        model.addAttribute("rooms", roomRepository.findAll());
-        model.addAttribute("teachers", repo.findAll());
+
+        // Fetch the current school year from the session
+        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+
+        // Filter entities based on the previous school year
+        String previousSchoolYear = calculatePreviousSchoolYear(currentSchoolYear);
+
+        List<Section> sections = sectionRepository.findAll().stream()
+                .filter(section -> previousSchoolYear.equals(section.getSchoolYear()))
+                .distinct() // Ensure no duplicates
+                .collect(Collectors.toList());
+
+        List<Room> rooms = roomRepository.findAll().stream()
+                .filter(room -> previousSchoolYear.equals(room.getSchoolYear()))
+                .distinct() // Ensure no duplicates
+                .collect(Collectors.toList());
+
+        List<Teacher> teachers = repo.findAll().stream()
+                .filter(teacher -> previousSchoolYear.equals(teacher.getSchoolYear()))
+                .distinct() // Ensure no duplicates
+                .collect(Collectors.toList());
+
+        model.addAttribute("sections", sections);
+        model.addAttribute("rooms", rooms);
+        model.addAttribute("teachers", teachers);
         return "admin/allEntities";
+    }
+
+    private String calculatePreviousSchoolYear(String currentSchoolYear) {
+        try {
+            String[] years = currentSchoolYear.split("-");
+            int startYear = Integer.parseInt(years[0]) - 1;
+            int endYear = Integer.parseInt(years[1]) - 1;
+            return startYear + "-" + endYear;
+        } catch (Exception e) {
+            throw new IllegalStateException("Invalid school year format: " + currentSchoolYear);
+        }
     }
 
     @PostMapping("/allEntities/keep")
@@ -830,7 +892,7 @@ public String showArchivedTeachers(Model model, HttpSession session) {
         List<Section> allSections = sectionRepository.findAll();
         if (keepSectionIds != null) {
             for (Section section : allSections) {
-                if (keepSectionIds.contains(section.getId())) {
+                if (keepSectionIds.contains(section.getId()) && !currentSchoolYear.equals(section.getSchoolYear())) {
                     // Duplicate or update for new school year
                     Section newSection = new Section();
                     newSection.setName(section.getName());
@@ -844,7 +906,7 @@ public String showArchivedTeachers(Model model, HttpSession session) {
         List<Room> allRooms = roomRepository.findAll();
         if (keepRoomIds != null) {
             for (Room room : allRooms) {
-                if (keepRoomIds.contains(room.getId())) {
+                if (keepRoomIds.contains(room.getId()) && !currentSchoolYear.equals(room.getSchoolYear())) {
                     Room newRoom = new Room();
                     newRoom.setName(room.getName());
                     newRoom.setLabType(room.getLabType());
@@ -858,7 +920,7 @@ public String showArchivedTeachers(Model model, HttpSession session) {
         List<Teacher> allTeachers = repo.findAll();
         if (keepTeacherIds != null) {
             for (Teacher teacher : allTeachers) {
-                if (keepTeacherIds.contains(teacher.getId())) {
+                if (keepTeacherIds.contains(teacher.getId()) && !currentSchoolYear.equals(teacher.getSchoolYear())) {
                     Teacher newTeacher = new Teacher();
                     newTeacher.setFirstName(teacher.getFirstName());
                     newTeacher.setLastName(teacher.getLastName());
@@ -877,6 +939,10 @@ public String showArchivedTeachers(Model model, HttpSession session) {
                 }
             }
         }
+
+        // Set the flag to prevent reopening allEntities.html
+        String allEntitiesFlag = "allEntitiesShown_" + currentSchoolYear;
+        session.setAttribute(allEntitiesFlag, true);
 
         redirectAttributes.addFlashAttribute("successMessage", "Entities kept for the new school year.");
         return "redirect:/teachers";

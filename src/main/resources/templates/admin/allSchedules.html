@@ -97,8 +97,11 @@
                     <label for="section" class="form-label">Select Section</label>
                     <select name="section" id="section" class="form-select">
                         <option value="" selected>All Sections</option>
-                        <option th:each="section : ${sections}" th:value="${section.name}" 
-                                th:text="${section.name}" th:selected="${selectedSection == section.name}">
+                        <option th:each="section : ${sections}" 
+                                th:if="${section.schoolYear == selectedSchoolYear}" 
+                                th:value="${section.name}" 
+                                th:text="${section.name}" 
+                                th:selected="${selectedSection == section.name}">
                         </option>
                     </select>
                 </div>

@@ -5,6 +5,7 @@ import com.TeacherSchedule.TeacherSchedule.services.TeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.models.Attendance;
 import com.TeacherSchedule.TeacherSchedule.repositories.AttendanceRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.SchoolYearRepository;
+import com.TeacherSchedule.TeacherSchedule.services.ScheduleService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class AuthController {
     @Autowired
     private SchoolYearRepository schoolYearRepository; // Inject SchoolYearRepository
 
+    @Autowired
+    private ScheduleService scheduleService; // Inject ScheduleService
+
     @GetMapping("/signin")
     public String showSignInPage(Model model) {
         model.addAttribute("schoolYears", schoolYearRepository.findAll()); // Fetch school years
@@ -45,6 +49,16 @@ public class AuthController {
         if ("admin".equals(email) && "adminadmin".equals(password)) { // Match hardcoded credentials
             session.setAttribute("role", "admin");
             session.setAttribute("currentSchoolYear", schoolYear); // Set the selected school year
+
+            // Check if the selected school year has schedules
+            boolean hasSchedules = !scheduleService.getSchedulesBySchoolYear(schoolYear).isEmpty();
+
+            if (!hasSchedules) {
+                // Redirect to allEntities.html if no schedules exist for the selected school year
+                return "redirect:/teachers/allEntities";
+            }
+
+            // Redirect to the admin dashboard if schedules exist
             return "redirect:/teachers";
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password.");

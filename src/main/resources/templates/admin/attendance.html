@@ -204,14 +204,14 @@
             </tr>
           </thead>
           <tbody id="attendanceBody" style="font-size: 1.1rem;">
-            <tr th:each="ts : ${teacherStatuses}">
+            <tr th:each="ts : ${teacherStatuses}" th:if="${ts.teacher.schoolYear == currentSchoolYear}">
               <td th:text="${ts.teacher.firstName} + ' ' + ${ts.teacher.lastName}"></td>
               <td th:text="${ts.teacher.subjects}"></td>
               <td th:text="${today}"></td>
               <td th:text="${ts.status}" 
                   th:classappend="${ts.status == 'Present' ? 'text-success' : 
                                   (ts.status == 'Late' ? 'text-warning' : 
-                                  (ts.status == 'Absent' ? 'text-danger' : ''))}"
+                                  (ts.status == 'Absent' ? 'text-danger' : '')}"
                   style="font-weight: bold; font-size: 1.2rem;">
               </td>
             </tr>

@@ -22,7 +22,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/teachers/manage")
@@ -53,21 +55,48 @@ public class ManageController {
     private ScheduleService scheduleService; // Inject ScheduleService
 
     @GetMapping
-    public String showManagePage(Model model) {
-        model.addAttribute("sections", sectionRepository.findAll());
+    public String showManagePage(Model model, HttpSession session) {
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
+
+        // Filter sections and rooms by the current school year
+        List<Section> sections = sectionRepository.findAll().stream()
+            .filter(section -> effectiveCurrentSchoolYear.equals(section.getSchoolYear()))
+            .collect(Collectors.toList());
+
+        List<Room> rooms = roomRepository.findAll().stream()
+            .filter(room -> effectiveCurrentSchoolYear.equals(room.getSchoolYear()))
+            .collect(Collectors.toList());
+
+        model.addAttribute("sections", sections);
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
-        model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("rooms", rooms);
         return "admin/manage"; // Return the view for the manage page
     }
 
     @PostMapping("/saveSection")
-    public String saveSection(@RequestParam String section, RedirectAttributes redirectAttributes) {
-        if (sectionRepository.findAll().stream().anyMatch(s -> s.getName().equalsIgnoreCase(section))) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Section already exists.");
+    public String saveSection(@RequestParam String section, HttpSession session, RedirectAttributes redirectAttributes) {
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
+
+        if (sectionRepository.findAll().stream().anyMatch(s -> s.getName().equalsIgnoreCase(section) && s.getSchoolYear().equals(effectiveCurrentSchoolYear))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Section already exists for the current school year.");
             return "redirect:/teachers/manage";
         }
+
         Section newSection = new Section();
         newSection.setName(section);
+        newSection.setSchoolYear(effectiveCurrentSchoolYear); // Set the current school year
         sectionRepository.save(newSection); // Save the section to the database
         redirectAttributes.addFlashAttribute("successMessage", "Section added successfully.");
         return "redirect:/teachers/manage";
@@ -87,14 +116,24 @@ public class ManageController {
     }
 
     @PostMapping("/saveRoom")
-    public String saveRoom(@RequestParam String room, @RequestParam(required = false) String labType, RedirectAttributes redirectAttributes) {
-        if (roomRepository.findAll().stream().anyMatch(r -> r.getName().equalsIgnoreCase(room))) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Room already exists.");
+    public String saveRoom(@RequestParam String room, @RequestParam(required = false) String labType, HttpSession session, RedirectAttributes redirectAttributes) {
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
+
+        if (roomRepository.findAll().stream().anyMatch(r -> r.getName().equalsIgnoreCase(room) && r.getSchoolYear().equals(effectiveCurrentSchoolYear))) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Room already exists for the current school year.");
             return "redirect:/teachers/manage";
         }
+
         Room newRoom = new Room();
         newRoom.setName(room);
         newRoom.setLabType(labType); // Save the lab type if provided
+        newRoom.setSchoolYear(effectiveCurrentSchoolYear); // Set the current school year
         roomRepository.save(newRoom); // Save the room to the database
         redirectAttributes.addFlashAttribute("successMessage", "Room added successfully.");
         return "redirect:/teachers/manage";
