@@ -106,7 +106,8 @@
             <div class="col-md-4">
                 <label for="room" class="form-label">Available Room</label>
                 <select name="room" id="room" class="form-select" form="generateForm" required>
-                    <option th:each="room : ${rooms}" th:value="${room.name}" th:text="${room.name}" th:selected="${selectedRoom == room.name}">
+                    <option th:each="room : ${rooms}" th:if="${room.labType == null || room.labType.isEmpty()}" 
+                            th:value="${room.name}" th:text="${room.name}" th:selected="${selectedRoom == room.name}">
                     </option>
                 </select>
             </div>
