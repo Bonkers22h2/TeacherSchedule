@@ -27,6 +27,8 @@ public class ArchivedTeacher {
     private LocalDate createdAt;
     private LocalDate archivedAt;
 
+    private String gradeLevels; // Add this property
+
     public ArchivedTeacher() {}
 
     public ArchivedTeacher(Teacher teacher) {
@@ -146,5 +148,13 @@ public class ArchivedTeacher {
 
     public void setArchivedAt(LocalDate archivedAt) {
         this.archivedAt = archivedAt;
+    }
+
+    public String getGradeLevels() {
+        return gradeLevels;
+    }
+
+    public void setGradeLevels(String gradeLevels) {
+        this.gradeLevels = gradeLevels;
     }
 }

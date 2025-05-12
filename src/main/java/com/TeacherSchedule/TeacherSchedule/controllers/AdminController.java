@@ -162,7 +162,7 @@ public class AdminController {
 
 
         model.addAttribute("teachersPresent", teachersPresent);
-        addSectionCountToModel(model);
+        addSectionCountToModel(model, currentSchoolYear);
 
         // Pass the current school year to the dashboard
         model.addAttribute("currentSchoolYear", currentSchoolYear);
@@ -172,9 +172,9 @@ public class AdminController {
 
 
     // Show Section count
-    private void addSectionCountToModel(Model model) {
-        // Fetch all schedules (to count sections per grade level)
-        List<Schedule> schedules = scheduleService.getAllSchedules();
+    private void addSectionCountToModel(Model model, String currentSchoolYear) {
+        // Fetch all schedules for the current school year
+        List<Schedule> schedules = scheduleService.getSchedulesBySchoolYear(currentSchoolYear);
 
         // Create a map to store unique sections for each grade level
         Map<String, Set<String>> sectionsByGrade = new HashMap<>();
@@ -203,8 +203,9 @@ public class AdminController {
 
         for (String gradeLevel : sectionsByGrade.keySet()) {
             long availableRooms = roomRepository.findAll().stream()
+                .filter(room -> currentSchoolYear.equals(room.getSchoolYear())) // Filter by current school year
                 .filter(room -> room.getLabType() == null || room.getLabType().isEmpty()) // General rooms only
-                .filter(room -> scheduleService.getAllSchedules().stream()
+                .filter(room -> schedules.stream()
                     .noneMatch(schedule -> room.getName().equals(schedule.getRoom()) && gradeLevel.equals(schedule.getGradeLevel())))
                 .count();
             availableRoomsByGrade.put(gradeLevel, availableRooms);

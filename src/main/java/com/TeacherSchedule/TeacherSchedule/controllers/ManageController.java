@@ -303,29 +303,33 @@ public class ManageController {
 
     @PostMapping("/nextSchoolYear")
     public String goToNextSchoolYear(@RequestParam(value = "removeArchivedSchedules", required = false) boolean removeArchivedSchedules,
-                                     RedirectAttributes redirectAttributes) {
+                                     HttpSession session, RedirectAttributes redirectAttributes) {
         try {
-            if (!removeArchivedSchedules) {
-                // Archive all schedules before proceeding to the next school year
-                List<Schedule> schedules = scheduleService.getAllSchedules();
-                if (!schedules.isEmpty()) {
-                    for (Schedule schedule : schedules) {
-                        ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
-                        archivedScheduleRepository.save(archivedSchedule);
-                        scheduleService.deleteSchedule(schedule.getId());
-                    }
-                }
+            // Fetch the current school year
+            String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+            if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+                currentSchoolYear = scheduleService.getCurrentSchoolYear();
+                session.setAttribute("currentSchoolYear", currentSchoolYear);
             }
 
-            // Fetch the latest school year
-            String latestSchoolYear = scheduleService.getCurrentSchoolYear();
-            if ("No School Year Available".equals(latestSchoolYear)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "No school year found to proceed.");
+            // Check if there are any schedules for the current school year
+            List<Schedule> currentYearSchedules = scheduleService.getSchedulesBySchoolYear(currentSchoolYear);
+            if (currentYearSchedules.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Cannot proceed to the next school year. No schedules exist for the current school year.");
                 return "redirect:/teachers/manage";
             }
 
-            // Parse the latest school year and calculate the next one
-            String[] years = latestSchoolYear.split("-");
+            if (!removeArchivedSchedules) {
+                // Archive all schedules before proceeding to the next school year
+                for (Schedule schedule : currentYearSchedules) {
+                    ArchivedSchedule archivedSchedule = new ArchivedSchedule(schedule);
+                    archivedScheduleRepository.save(archivedSchedule);
+                    scheduleService.deleteSchedule(schedule.getId());
+                }
+            }
+
+            // Parse the current school year and calculate the next one
+            String[] years = currentSchoolYear.split("-");
             int startYear = Integer.parseInt(years[0]) + 1;
             int endYear = Integer.parseInt(years[1]) + 1;
             String nextSchoolYear = startYear + "-" + endYear;

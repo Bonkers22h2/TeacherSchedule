@@ -252,7 +252,7 @@ public class ScheduleService {
 
         Set<Integer> assignedHomeroomTeachers = scheduleRepository.findAll().stream()
                 .filter(schedule -> "Homeroom".equals(schedule.getSubject()) && schedule.getTeacher() != null)
-                .filter(schedule -> schoolYear.equals(schedule.getSchoolYear())) // Check only for the current school year
+                .filter(schedule -> schoolYear.equals(schedule.getSchoolYear())) // Restrict to current school year
                 .map(schedule -> schedule.getTeacher().getId())
                 .collect(Collectors.toSet());
 
@@ -267,19 +267,22 @@ public class ScheduleService {
             if ("Homeroom".equals(subject)) {
                 teachers = teacherRepository.findAll().stream()
                         .filter(teacher -> !assignedHomeroomTeachers.contains(teacher.getId()))
+                        .filter(teacher -> schoolYear.equals(teacher.getSchoolYear())) // Restrict to current school year
                         .collect(Collectors.toList());
             } else {
                 if (subject.startsWith("TLE")) {
                     subject = "TLE";
                 }
-                teachers = teacherRepository.findBySubjectsContaining(subject);
+                teachers = teacherRepository.findBySubjectsContaining(subject).stream()
+                        .filter(teacher -> schoolYear.equals(teacher.getSchoolYear())) // Restrict to current school year
+                        .collect(Collectors.toList());
             }
 
             boolean teacherAssigned = false;
 
             for (Teacher teacher : teachers) {
                 boolean conflict = scheduleRepository.findAll().stream()
-                        .filter(s -> schoolYear.equals(s.getSchoolYear())) // Check only for the current school year
+                        .filter(s -> schoolYear.equals(s.getSchoolYear())) // Restrict to current school year
                         .anyMatch(s -> s.getTeacher() != null && s.getTeacher().getId() == teacher.getId() &&
                                 overlaps(s.getTimeSlot(), schedule.getTimeSlot()));
                 if (!conflict) {
