@@ -9,14 +9,13 @@
 <div class="container mt-5">
     <a href="javascript:history.back()" class="btn btn-secondary mb-3">Back</a>
     <h2 class="mb-4 text-center">Subjects</h2>
+    <p class="text-center">Current School Year: <span th:text="${currentSchoolYear}">No School Year Available</span></p>
 
     <!-- Success Message -->
     <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
         <span th:text="${successMessage}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-
-
 
     <!-- Subjects Table -->
     <table class="table table-striped">
@@ -33,17 +32,64 @@
         <tr th:each="subject : ${subjects}">
             <td th:text="${subject.id}"></td>
             <td th:text="${subject.name}"></td>
-            <td th:text="${subject.subSubject != null ? subject.subSubject : 'None'}"></td>
-            <td th:text="${subject.gradeLevel}"></td>
             <td>
-                <form action="/subjects/delete" method="POST" style="display: inline;">
-                    <input type="hidden" name="id" th:value="${subject.id}">
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this subject?');">Delete</button>
-                </form>
+                <input type="text" th:value="${subject.subSubject}" th:attr="data-id=${subject.id}" 
+                       class="form-control subSubjectInput" disabled />
+            </td>
+            <td>
+                <select th:attr="data-id=${subject.id}" class="form-select gradeLevelInput" disabled>
+                    <option value="" disabled>Select Grade</option>
+                    <optgroup label="Grade School">
+                        <option th:each="grade : ${#numbers.sequence(1, 6)}" th:value="${'Grade ' + grade}" th:text="${'Grade ' + grade}" th:selected="${subject.gradeLevel == 'Grade ' + grade}">
+                        </option>
+                    </optgroup>
+                    <optgroup label="Junior High School">
+                        <option th:each="grade : ${#numbers.sequence(7, 10)}" th:value="${'Grade ' + grade}" th:text="${'Grade ' + grade}" th:selected="${subject.gradeLevel == 'Grade ' + grade}">
+                        </option>
+                    </optgroup>
+                </select>
+            </td>
+            <td>
+                <button class="btn btn-warning editButton" th:attr="data-id=${subject.id}" 
+                        onclick="enableEdit(this)">Edit</button>
+                <button class="btn btn-success saveButton d-none" th:attr="data-id=${subject.id}" 
+                        onclick="saveEdit(this)">Save</button>
             </td>
         </tr>
         </tbody>
     </table>
 </div>
+<script>
+    function enableEdit(button) {
+        const id = button.getAttribute('data-id');
+        document.querySelector(`.subSubjectInput[data-id="${id}"]`).disabled = false;
+        document.querySelector(`.gradeLevelInput[data-id="${id}"]`).disabled = false;
+        button.classList.add('d-none');
+        document.querySelector(`.saveButton[data-id="${id}"]`).classList.remove('d-none');
+    }
+
+    async function saveEdit(button) {
+        const id = button.getAttribute('data-id');
+        const subSubject = document.querySelector(`.subSubjectInput[data-id="${id}"]`).value;
+        const gradeLevel = document.querySelector(`.gradeLevelInput[data-id="${id}"]`).value;
+
+        try {
+            const response = await fetch('/subjects/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, subSubject, gradeLevel })
+            });
+
+            if (response.ok) {
+                alert('Changes saved successfully.');
+                location.reload();
+            } else {
+                alert('Failed to save changes.');
+            }
+        } catch (error) {
+            alert('An error occurred: ' + error.message);
+        }
+    }
+</script>
 </body>
 </html>

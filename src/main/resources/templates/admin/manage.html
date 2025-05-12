@@ -51,6 +51,8 @@
         <div class="d-flex justify-content-center mb-4">
             <button class="btn btn-primary mx-2" onclick="toggleTable('sectionsTable')">Manage Sections</button>
             <button class="btn btn-primary mx-2" onclick="toggleTable('roomsTable')">Manage Rooms</button>
+            <a href="/subjects" class="btn btn-primary">Manage Subjects</a>
+
         </div>
 
         <!-- Section Form -->
@@ -62,17 +64,6 @@
             </div>
             <button type="submit" class="btn btn-primary">Save Section</button>
         </form>
-
-        <!-- School Year Form -->
-        <form action="/teachers/manage/saveSchoolYear" method="post" class="mb-4">
-            <div class="mb-3">
-                <label for="schoolYear" class="form-label">School Year</label>
-                <input type="text" id="schoolYear" name="schoolYear" class="form-control"
-                    placeholder="Enter school year (e.g., 2023-2024)" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Save School Year</button>
-        </form>
-
 
 
         <!-- Room Form -->
@@ -101,10 +92,7 @@
             <button type="submit" class="btn btn-success w-100 mt-5">Go to Next School Year</button>
         </form>
 
-        <!-- Button to navigate to subjects.html -->
-        <div class="d-flex justify-content-end mb-3">
-            <a href="/subjects" class="btn btn-primary">Manage Subjects</a>
-        </div>
+
 
         <!-- Rooms Table -->
         <div id="roomsTable" class="mt-4 d-none">
