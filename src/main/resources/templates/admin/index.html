@@ -58,6 +58,8 @@
         <h2 class="mb-4"
             style="color: rgb(0, 0, 0); text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 2rem">
             Current School Year: <span th:text="${currentSchoolYear}"></span>
+            <span th:if="${currentSchoolYear == latestSchoolYear}" class="text-success">(Latest)</span>
+            <span th:if="${currentSchoolYear != latestSchoolYear}" class="text-danger">(Previous)</span>
         </h2>
 
         <div class="container-fluid mt-5 px-5 pb-5">
@@ -159,9 +161,10 @@
                                         <td th:text="${teacher.email}"></td>
                                         <td>
                                             <a th:href="@{/teachers/profile(teacherName=${teacher.firstName + ' ' + teacher.lastName})}"
-                                                class="btn btn-warning">Edit</a>
+                                                class="btn btn-warning" th:disabled="${currentSchoolYear != latestSchoolYear}">Edit</a>
                                             <a th:href="@{/teachers/archive(id=${teacher.id})}" class="btn btn-danger"
-                                                onclick="return confirm('Are you sure you want to archive this teacher?');">Archive</a>
+                                                onclick="return confirm('Are you sure you want to archive this teacher?');"
+                                                th:disabled="${currentSchoolYear != latestSchoolYear}">Archive</a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -175,6 +178,14 @@
         </div>
     </div>
 </div> <!-- Closing tags for the main content -->
+
+<style>
+    .btn[disabled] {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+
 </body>
 
 <footer class="text-center py-2" style="background-color: #9EFAA7; color: #344D00; font-family: 'Poppins', sans-serif; position: fixed; bottom: 0; width: 100%;">

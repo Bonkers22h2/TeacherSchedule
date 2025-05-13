@@ -36,6 +36,11 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container mt-5 mb-5">
         <h2 class="text-center mb-4">Manage Sections, School Years, and Rooms</h2>
+        <h3 class="mb-4 text-center">
+            Current School Year: <span th:text="${currentSchoolYear}"></span>
+            <span th:if="${currentSchoolYear == latestSchoolYear}" class="text-success">(Latest)</span>
+            <span th:if="${currentSchoolYear != latestSchoolYear}" class="text-danger">(Previous)</span>
+        </h3>
 
         <!-- Display error messages -->
         <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -51,18 +56,16 @@
         <div class="d-flex justify-content-center mb-4">
             <button class="btn btn-primary mx-2" onclick="toggleTable('sectionsTable')">Manage Sections</button>
             <button class="btn btn-primary mx-2" onclick="toggleTable('roomsTable')">Manage Rooms</button>
-            <a href="/subjects" class="btn btn-primary">Manage Subjects</a>
-
+            <a href="/subjects" class="btn btn-primary mx-2">Manage Subjects</a>
         </div>
 
         <!-- Section Form -->
         <form action="/teachers/manage/saveSection" method="post" class="mb-4">
             <div class="mb-3">
                 <label for="section" class="form-label">Section</label>
-                <input type="text" id="section" name="section" class="form-control" placeholder="Enter section name"
-                    required>
+                <input type="text" id="section" name="section" class="form-control" placeholder="Enter section name" required th:disabled="${currentSchoolYear != latestSchoolYear}">
             </div>
-            <button type="submit" class="btn btn-primary">Save Section</button>
+            <button type="submit" class="btn btn-primary" th:disabled="${currentSchoolYear != latestSchoolYear}">Save Section</button>
         </form>
 
 
@@ -70,11 +73,11 @@
         <form action="/teachers/manage/saveRoom" method="POST">
             <div class="mb-3">
                 <label for="room" class="form-label">Room Name</label>
-                <input type="text" class="form-control" id="room" name="room" required>
+                <input type="text" class="form-control" id="room" name="room" required th:disabled="${currentSchoolYear != latestSchoolYear}">
             </div>
             <div class="mb-3">
                 <label for="labType" class="form-label">Laboratory Type</label>
-                <select class="form-select" id="labType" name="labType">
+                <select class="form-select" id="labType" name="labType" th:disabled="${currentSchoolYear != latestSchoolYear}">
                     <option value="" selected>None</option>
                     <option value="ICT">ICT Lab</option>
                     <option value="Home Economics">Home Economics Lab</option>
@@ -83,13 +86,13 @@
                     <option value="Industrial Arts">Industrial Arts Lab</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Add Room</button>
+            <button type="submit" class="btn btn-primary" th:disabled="${currentSchoolYear != latestSchoolYear}">Add Room</button>
         </form>
 
         <!-- Next School Year Button -->
         <form action="/teachers/manage/nextSchoolYear" method="POST" class="mb-4" onsubmit="return confirmPassword();">
             <input type="hidden" name="removeArchivedSchedules" value="true">
-            <button type="submit" class="btn btn-success w-100 mt-5">Go to Next School Year</button>
+            <button type="submit" class="btn btn-success w-100 mt-5" th:disabled="${currentSchoolYear != latestSchoolYear}">Go to Next School Year</button>
         </form>
 
 
@@ -111,12 +114,12 @@
                             <td th:text="${room.name}"></td>
                             <td th:text="${room.labType != null ? room.labType : 'None'}"></td>
                             <td>
-                                <a th:href="@{/teachers/manage/editRoom(id=${room.id})}"
-                                    class="btn btn-warning btn-sm">Edit</a>
-                                <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}"
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Are you sure you want to archive this room?');">Archive</a>
+                                <a th:href="@{/teachers/manage/editRoom(id=${room.id})}" class="btn btn-warning btn-sm" th:disabled="${currentSchoolYear != latestSchoolYear}">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveRoom(id=${room.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to archive this room?');" th:disabled="${currentSchoolYear != latestSchoolYear}">Archive</a>
                             </td>
+                        </tr>
+                        <tr th:if="${rooms == null or rooms.isEmpty()}">
+                            <td colspan="3" class="text-center">No rooms available.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -138,11 +141,8 @@
                         <tr th:each="schoolYear : ${schoolYears}">
                             <td th:text="${schoolYear.year}"></td>
                             <td>
-                                <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}"
-                                    class="btn btn-warning btn-sm">Edit</a>
-                                <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}"
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
+                                <a th:href="@{/teachers/manage/editSchoolYear(id=${schoolYear.id})}" class="btn btn-warning btn-sm">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveSchoolYear(id=${schoolYear.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to archive this school year?');">Archive</a>
                             </td>
                         </tr>
                     </tbody>
@@ -165,11 +165,8 @@
                         <tr th:each="section : ${sections}">
                             <td th:text="${section.name}"></td>
                             <td>
-                                <a th:href="@{/teachers/manage/editSection(id=${section.id})}"
-                                    class="btn btn-warning btn-sm">Edit</a>
-                                <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}"
-                                    class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Are you sure you want to archive this section?');">Archive</a>
+                                <a th:href="@{/teachers/manage/editSection(id=${section.id})}" class="btn btn-warning btn-sm" th:disabled="${currentSchoolYear != latestSchoolYear}">Edit</a>
+                                <a th:href="@{/teachers/manage/archiveSection(id=${section.id})}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to archive this section?');" th:disabled="${currentSchoolYear != latestSchoolYear}">Archive</a>
                             </td>
                         </tr>
                     </tbody>
@@ -178,9 +175,16 @@
         </div>
     </div>
 
+    <style>
+        .btn[disabled] {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
+
     <script>
         function toggleTable(tableId) {
-            const tables = ['roomsTable', 'schoolYearsTable', 'sectionsTable'];
+            const tables = ['roomsTable', 'sectionsTable'];
             tables.forEach(id => {
                 document.getElementById(id).classList.add('d-none');
             });

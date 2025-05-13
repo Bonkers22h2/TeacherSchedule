@@ -76,6 +76,11 @@
 <body>
     <div class="container mt-5 mb-5">
         <h1 class="mb-4 text-center">All Schedules</h1>
+        <h2 class="mb-4 text-center">
+            Current School Year: <span th:text="${currentSchoolYear}"></span>
+            <span th:if="${currentSchoolYear == latestSchoolYear}" class="text-success">(Latest)</span>
+            <span th:if="${currentSchoolYear != latestSchoolYear}" class="text-danger">(Previous)</span>
+        </h2>
 
         <!-- Display success or error messages -->
         <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -122,7 +127,8 @@
                     </select>
                 </div>
             </div>
-            <input type="hidden" name="schoolYear" th:value="${selectedSchoolYear}" /> <!-- Include current school year -->
+                <!-- Include current school year in the form -->
+            <input type="hidden" name="schoolYear" th:value="${selectedSchoolYear}" />
             <button type="submit" class="btn btn-primary mb-3 w-100">Show Schedule</button>
         </form>
 
@@ -132,7 +138,7 @@
                     <input type="hidden" name="section" id="assignSection" th:value="${selectedSection}">
                     <input type="hidden" name="schoolYear" id="assignSchoolYear" th:value="${selectedSchoolYear}"> <!-- Include current school year -->
                     <input type="hidden" name="gradeLevel" id="assignGradeLevel" th:value="${selectedGradeLevel}">
-                    <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()">Auto-Assign Teacher</button>
+                    <button type="button" class="btn btn-warning mb-3 w-100" onclick="submitAssignForm()" th:disabled="${selectedSchoolYear != latestSchoolYear}">Auto-Assign Teacher</button>
                 </form>
             </div>
             <div class="col">
@@ -140,7 +146,7 @@
                     <input type="hidden" name="section" id="assignLabRoomSection" th:value="${selectedSection}">
                     <input type="hidden" name="schoolYear" id="assignLabRoomSchoolYear" th:value="${selectedSchoolYear}"> <!-- Include current school year -->
                     <input type="hidden" name="gradeLevel" id="assignLabRoomGradeLevel" th:value="${selectedGradeLevel}">
-                    <button type="button" class="btn btn-info mb-3 w-100" onclick="submitAssignLabRoomForm()">Auto-Assign Lab Room</button>
+                    <button type="button" class="btn btn-info mb-3 w-100" onclick="submitAssignLabRoomForm()" th:disabled="${selectedSchoolYear != latestSchoolYear}">Auto-Assign Lab Room</button>
                 </form>
             </div>
         </div>

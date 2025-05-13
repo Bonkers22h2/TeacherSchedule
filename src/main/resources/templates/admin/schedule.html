@@ -75,6 +75,11 @@
         .table-striped tbody tr:hover {
             background-color: #f1f1f1;
         }
+
+        .btn[disabled] {
+            pointer-events: none;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
@@ -83,6 +88,12 @@
 
     <div class="container mt-5 px-5 py-5">
         <h1 class="mb-4 text-center">Teacher Schedule</h1>
+        <h2 class="mb-4"
+            style="color: rgb(0, 0, 0); text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 2rem">
+            Current School Year: <span th:text="${currentSchoolYear}"></span>
+            <span th:if="${currentSchoolYear == latestSchoolYear}" class="text-success">(Latest)</span>
+            <span th:if="${currentSchoolYear != latestSchoolYear}" class="text-danger">(Previous)</span>
+        </h2>
         <a href="/teachers" class="btn btn-success mb-3">Back</a>
         <a href="/teachers/allSchedules" class="btn btn-primary mb-3">View All Schedules</a>
 
@@ -137,7 +148,7 @@
                     <input type="hidden" name="schoolYear" th:value="${currentSchoolYear}" /> <!-- Use current school year -->
                     <input type="hidden" name="room" id="generateRoom" value="" />
                     <input type="hidden" name="gradeLevel" id="generateGradeLevel" value="" />
-                    <button type="submit" class="btn btn-primary w-100">Generate Schedule</button>
+                    <button type="submit" class="btn btn-primary w-100" th:disabled="${currentSchoolYear != latestSchoolYear}">Generate Schedule</button>
                 </form>
             </div>
 
@@ -151,7 +162,7 @@
                     <input type="hidden" name="schoolYear" th:value="${currentSchoolYear}" /> <!-- Use current school year -->
                     <input type="hidden" name="room" id="saveRoom" value="" />
                     <input type="hidden" name="gradeLevel" id="saveGradeLevel" value="" />
-                    <button type="submit" class="btn btn-success w-100">Save Schedule</button>
+                    <button type="submit" class="btn btn-success w-100" th:disabled="${currentSchoolYear != latestSchoolYear}">Save Schedule</button>
                 </form>
             </div>
         </div>

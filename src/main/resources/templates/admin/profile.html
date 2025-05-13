@@ -65,6 +65,12 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container mt-5 px-5 py-5">
         <h1 class="profile-header text-center">Admin Profile</h1>
+        <h2 class="mb-4"
+            style="color: rgb(0, 0, 0); text-align: center; font-weight: bold ; font-family: 'Poppins', sans-serif; font-size: 2rem">
+            Current School Year: <span th:text="${currentSchoolYear}"></span>
+            <span th:if="${currentSchoolYear == latestSchoolYear}" class="text-success">(Latest)</span>
+            <span th:if="${currentSchoolYear != latestSchoolYear}" class="text-danger">(Previous)</span>
+        </h2>
         <p class="profile-subtext text-center">Welcome to the profile tab. Manage your details here.</p>
 
         <div class="search-container">
@@ -147,18 +153,24 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-warning" id="editButton" onclick="toggleEdit()">Edit</button>
+                    <button type="button" class="btn btn-warning" id="editButton" onclick="toggleEdit()" th:disabled="${currentSchoolYear != latestSchoolYear}">Edit</button>
                     <button type="button" class="btn btn-primary d-none" id="saveButton"
-                        onclick="if(confirm('Are you sure you want to save the changes?')) saveTeacher()">Save</button>
+                        onclick="if(confirm('Are you sure you want to save the changes?')) saveTeacher()" th:disabled="${currentSchoolYear != latestSchoolYear}">Save</button>
                     <button type="button" class="btn btn-danger" id="archiveButton"
-                        onclick="archiveTeacher()">Archive</button>
-                    <button type="button" class="btn btn-success" onclick="window.location.href='/teachers/add'">Add
-                        Teacher</button>
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/teachers/archived'">View Archived Teachers</button>
+                        onclick="archiveTeacher()" th:disabled="${currentSchoolYear != latestSchoolYear}">Archive</button>
+                    <button type="button" class="btn btn-success" onclick="window.location.href='/teachers/add'" th:disabled="${currentSchoolYear != latestSchoolYear}">Add Teacher</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/teachers/archived'" th:disabled="${currentSchoolYear != latestSchoolYear}">View Archived Teachers</button>
                 </div>
             </form>
         </div>
     </div>
+
+    <style>
+        .btn[disabled] {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
 
     <script>
         async function searchTeacher() {

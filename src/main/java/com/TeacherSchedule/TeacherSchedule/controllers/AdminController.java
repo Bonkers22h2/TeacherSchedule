@@ -82,6 +82,7 @@ public class AdminController {
             currentSchoolYear = scheduleService.getCurrentSchoolYear();
             session.setAttribute("currentSchoolYear", currentSchoolYear);
         }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
 
         // --- Check if allEntities.html should be shown ---
         String allEntitiesFlag = "allEntitiesShown_" + currentSchoolYear;
@@ -169,7 +170,15 @@ public class AdminController {
         addSectionCountToModel(model, currentSchoolYear);
 
         // Pass the current school year to the dashboard
-        model.addAttribute("currentSchoolYear", currentSchoolYear);
+        model.addAttribute("currentSchoolYear", effectiveCurrentSchoolYear);
+
+        // Add logic to determine if the current school year is the latest and pass it to the model
+        String latestSchoolYear = schoolYearRepository.findAll().stream()
+            .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+            .map(SchoolYear::getYear)
+            .orElse("No School Year Available");
+
+        model.addAttribute("latestSchoolYear", latestSchoolYear);
 
         return "admin/index";
     }
@@ -340,6 +349,16 @@ public class AdminController {
         }
         final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
 
+        // Fetch the latest school year
+        String latestSchoolYear = schoolYearRepository.findAll().stream()
+            .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+            .map(SchoolYear::getYear)
+            .orElse("No School Year Available");
+
+        // Add school year attributes to the model
+        model.addAttribute("currentSchoolYear", effectiveCurrentSchoolYear);
+        model.addAttribute("latestSchoolYear", latestSchoolYear);
+
         // Fetch all sections and exclude those already in a schedule for the current school year
         List<String> scheduledSections = scheduleService.getSchedulesBySchoolYear(effectiveCurrentSchoolYear).stream()
                 .map(Schedule::getSection)
@@ -461,18 +480,17 @@ public class AdminController {
         }
 
         // Fetch the current school year from the session
-        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
         if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
-            currentSchoolYear = schoolYearRepository.findAll().stream()
-                    .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
-                    .map(SchoolYear::getYear)
-                    .orElse("No School Year Available");
-            session.setAttribute("currentSchoolYear", currentSchoolYear); // Set default if not already set
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
         }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
 
         // Default to the current school year if none is selected
         if (selectedSchoolYear == null || selectedSchoolYear.isEmpty()) {
-            selectedSchoolYear = currentSchoolYear;
+            selectedSchoolYear = effectiveCurrentSchoolYear;
         }
 
         List<Schedule> schedules = scheduleService.getSchedulesBySchoolYear(selectedSchoolYear);
@@ -482,35 +500,58 @@ public class AdminController {
         model.addAttribute("selectedSection", selectedSection);
         model.addAttribute("selectedSchoolYear", selectedSchoolYear);
         model.addAttribute("selectedGradeLevel", selectedGradeLevel);
+
+        // Add currentSchoolYear and latestSchoolYear to the model
+        model.addAttribute("currentSchoolYear", effectiveCurrentSchoolYear);
+        String latestSchoolYear = schoolYearRepository.findAll().stream()
+            .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+            .map(SchoolYear::getYear)
+            .orElse("No School Year Available");
+        model.addAttribute("latestSchoolYear", latestSchoolYear);
+
         return "admin/allSchedules";
     }
 
     @GetMapping("/filterSchedule")
     public String filterSchedule(@RequestParam(value = "section", required = false) String section,
-            @RequestParam(value = "schoolYear", required = false) String schoolYear,
-            @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
-            Model model, HttpSession session) {
+                                  @RequestParam(value = "schoolYear", required = false) String schoolYear,
+                                  @RequestParam(value = "gradeLevel", required = false) String gradeLevel,
+                                  Model model, HttpSession session) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
+        }
+
+        // Fetch the current school year from the session if not provided
+        String currentSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        if (schoolYear == null || schoolYear.isEmpty()) {
+            schoolYear = currentSchoolYear;
         }
 
         List<Schedule> schedules;
 
         if ((section == null || section.isEmpty()) &&
-                (schoolYear == null || schoolYear.isEmpty()) &&
-                (gradeLevel == null || gradeLevel.isEmpty())) {
+            (schoolYear == null || schoolYear.isEmpty()) &&
+            (gradeLevel == null || gradeLevel.isEmpty())) {
             schedules = scheduleService.getAllSchedules(); // No filters applied
         } else {
             schedules = scheduleService.getFilteredSchedules(section, schoolYear, gradeLevel);
         }
 
-        
         model.addAttribute("schedules", schedules);
         model.addAttribute("sections", sectionRepository.findAll());
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("selectedSection", section);
         model.addAttribute("selectedSchoolYear", schoolYear);
         model.addAttribute("selectedGradeLevel", gradeLevel);
+
+        // Add currentSchoolYear and latestSchoolYear to the model
+        model.addAttribute("currentSchoolYear", currentSchoolYear);
+        String latestSchoolYear = schoolYearRepository.findAll().stream()
+            .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+            .map(SchoolYear::getYear)
+            .orElse("No School Year Available");
+        model.addAttribute("latestSchoolYear", latestSchoolYear);
+
         return "admin/allSchedules";
     }
 
@@ -520,7 +561,27 @@ public class AdminController {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
-        model.addAttribute("teacherName", teacherName); // Pass teacherName to the view
+
+        // Fetch the current school year
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        String currentSchoolYear = sessionSchoolYear;
+        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+            currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+        }
+        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
+
+        // Add school year attributes to the model
+        model.addAttribute("currentSchoolYear", effectiveCurrentSchoolYear);
+
+        String latestSchoolYear = schoolYearRepository.findAll().stream()
+            .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+            .map(SchoolYear::getYear)
+            .orElse("No School Year Available");
+
+        model.addAttribute("latestSchoolYear", latestSchoolYear);
+        model.addAttribute("teacherName", teacherName);
+
         return "admin/profile";
     }
 

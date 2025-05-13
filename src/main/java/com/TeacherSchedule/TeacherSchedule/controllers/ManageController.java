@@ -54,28 +54,44 @@ public class ManageController {
     @Autowired
     private ScheduleService scheduleService; // Inject ScheduleService
 
+    private String getCurrentSchoolYear(HttpSession session) {
+        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
+        if (sessionSchoolYear == null || sessionSchoolYear.isEmpty()) {
+            String currentSchoolYear = scheduleService.getCurrentSchoolYear();
+            if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
+                throw new IllegalStateException("No current school year found. Please ensure a school year is set.");
+            }
+            session.setAttribute("currentSchoolYear", currentSchoolYear);
+            return currentSchoolYear;
+        }
+        return sessionSchoolYear;
+    }
+
     @GetMapping
     public String showManagePage(Model model, HttpSession session) {
-        String sessionSchoolYear = (String) session.getAttribute("currentSchoolYear");
-        String currentSchoolYear = sessionSchoolYear;
-        if (currentSchoolYear == null || currentSchoolYear.isEmpty()) {
-            currentSchoolYear = scheduleService.getCurrentSchoolYear();
-            session.setAttribute("currentSchoolYear", currentSchoolYear);
-        }
-        final String effectiveCurrentSchoolYear = currentSchoolYear; // Make it effectively final
+        String currentSchoolYear = getCurrentSchoolYear(session);
+
+        // Fetch the latest school year
+        String latestSchoolYear = schoolYearRepository.findAll().stream()
+            .max((sy1, sy2) -> sy1.getYear().compareTo(sy2.getYear()))
+            .map(SchoolYear::getYear)
+            .orElse("No School Year Available");
 
         // Filter sections and rooms by the current school year
         List<Section> sections = sectionRepository.findAll().stream()
-            .filter(section -> effectiveCurrentSchoolYear.equals(section.getSchoolYear()))
+            .filter(section -> currentSchoolYear.equals(section.getSchoolYear()))
             .collect(Collectors.toList());
 
         List<Room> rooms = roomRepository.findAll().stream()
-            .filter(room -> effectiveCurrentSchoolYear.equals(room.getSchoolYear()))
+            .filter(room -> currentSchoolYear.equals(room.getSchoolYear()))
             .collect(Collectors.toList());
 
         model.addAttribute("sections", sections);
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("rooms", rooms);
+        model.addAttribute("currentSchoolYear", currentSchoolYear);
+        model.addAttribute("latestSchoolYear", latestSchoolYear);
+
         return "admin/manage"; // Return the view for the manage page
     }
 
