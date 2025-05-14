@@ -335,7 +335,9 @@ public class AdminController {
     public String showSchedule(Model model, HttpSession session,
             @RequestParam(value = "selectedSection", required = false) String selectedSection,
             @RequestParam(value = "selectedSchoolYear", required = false) String selectedSchoolYear,
-            @RequestParam(value = "selectedRoom", required = false) String selectedRoom) {
+            @RequestParam(value = "selectedRoom", required = false) String selectedRoom,
+            @RequestParam(value = "selectedGradeLevel", required = false) String selectedGradeLevel
+    ) {
         if (!"admin".equals(session.getAttribute("role"))) {
             return "redirect:/signin";
         }
@@ -377,13 +379,29 @@ public class AdminController {
                 .filter(room -> !scheduledRooms.contains(room.getName()))
                 .collect(Collectors.toList());
 
-        model.addAttribute("schedule", scheduleService.getCurrentSchedule());
+        // Generate schedule if all required params are present
+        List<String> schedule = null;
+        if (selectedSection != null && !selectedSection.isEmpty()
+                && selectedSchoolYear != null && !selectedSchoolYear.isEmpty()
+                && selectedGradeLevel != null && !selectedGradeLevel.isEmpty()) {
+            try {
+                schedule = scheduleService.generateSchedule(selectedSection, selectedSchoolYear, selectedGradeLevel);
+                model.addAttribute("schedule", schedule);
+            } catch (IllegalStateException e) {
+                model.addAttribute("error", e.getMessage());
+                model.addAttribute("schedule", scheduleService.getCurrentSchedule());
+            }
+        } else {
+            model.addAttribute("schedule", scheduleService.getCurrentSchedule());
+        }
+
         model.addAttribute("sections", availableSections);
         model.addAttribute("schoolYears", schoolYearRepository.findAll());
         model.addAttribute("rooms", availableRooms);
         model.addAttribute("selectedSection", selectedSection);
-        model.addAttribute("selectedSchoolYear", effectiveCurrentSchoolYear); // Use current school year as default
+        model.addAttribute("selectedSchoolYear", effectiveCurrentSchoolYear);
         model.addAttribute("selectedRoom", selectedRoom);
+        model.addAttribute("selectedGradeLevel", selectedGradeLevel);
         return "admin/schedule";
     }
 
@@ -421,7 +439,7 @@ public class AdminController {
         model.addAttribute("selectedSection", section);
         model.addAttribute("selectedSchoolYear", schoolYear);
         model.addAttribute("selectedRoom", room);
-        model.addAttribute("selectedGradeLevel", gradeLevel);
+        model.addAttribute("selectedGradeLevel", gradeLevel); // <-- keep selected grade level
         return "admin/schedule";
     }
 

@@ -142,12 +142,12 @@
         <div class="row mb-3">
             <!-- Generate Schedule Button -->
             <div class="col-md-6">
-                <form id="generateForm" action="/teachers/schedule/generate" method="POST"
+                <form id="generateForm" action="/teachers/schedule" method="GET"
                     onsubmit="return confirm('Are you sure you want to generate the schedule?');">
-                    <input type="hidden" name="section" id="generateSection" value="" />
-                    <input type="hidden" name="schoolYear" th:value="${currentSchoolYear}" /> <!-- Use current school year -->
-                    <input type="hidden" name="room" id="generateRoom" value="" />
-                    <input type="hidden" name="gradeLevel" id="generateGradeLevel" value="" />
+                    <input type="hidden" name="selectedSection" id="generateSection" value="" />
+                    <input type="hidden" name="selectedSchoolYear" th:value="${currentSchoolYear}" />
+                    <input type="hidden" name="selectedRoom" id="generateRoom" value="" />
+                    <input type="hidden" name="selectedGradeLevel" id="generateGradeLevel" value="" />
                     <button type="submit" class="btn btn-primary w-100" th:disabled="${currentSchoolYear != latestSchoolYear}">Generate Schedule</button>
                 </form>
             </div>
@@ -168,13 +168,15 @@
         </div>
 
         <!-- Schedule Table -->
+        <div class="mb-2">
+            <span class="fw-bold">Selected Grade Level:</span>
+            <span id="displaySelectedGradeLevel" th:text="${selectedGradeLevel != null ? selectedGradeLevel : 'None'}"></span>
+        </div>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Time Slot</th>
                     <th>Subject</th>
-                    <th>Sub-Subject</th> <!-- New Sub-Subject Column -->
-                    <th>Section</th>
                     <th>School Year</th>
                     <th>Grade Level</th>
                 </tr>
@@ -184,8 +186,6 @@
                 <tr th:each="entry : ${schedule}">
                     <td th:text="${#strings.arraySplit(entry, ' - ')[0]}"></td> <!-- Time Slot Start -->
                     <td th:text="${#strings.arraySplit(entry, ' - ')[2]}"></td> <!-- Subject -->
-                    <td th:text="${#strings.arraySplit(entry, ' - ')[3]}"></td> <!-- Sub-Subject -->
-                    <td th:text="${#strings.arraySplit(entry, ' - ')[4]}"></td> <!-- Section -->
                     <td th:text="${currentSchoolYear}"></td> <!-- Display School Year -->
                     <td th:text="${selectedGradeLevel}"></td> <!-- Display Grade Level -->
                 </tr>
@@ -208,6 +208,8 @@
         document.getElementById('gradeLevel').addEventListener('change', function () {
             document.getElementById('generateGradeLevel').value = this.value;
             document.getElementById('saveGradeLevel').value = this.value;
+            // Show selected grade level above the table
+            document.getElementById('displaySelectedGradeLevel').textContent = this.value || 'None';
         });
 
         // Initialize the hidden inputs with the current dropdown values

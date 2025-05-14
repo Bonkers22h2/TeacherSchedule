@@ -51,10 +51,12 @@ public class SubjectController {
     @ResponseBody
     public String editSubject(@RequestBody Map<String, String> payload) {
         Long id = Long.parseLong(payload.get("id"));
+        String name = payload.get("name");
         String subSubject = payload.get("subSubject");
         String gradeLevel = payload.get("gradeLevel");
 
         Subject subject = subjectRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid subject ID"));
+        subject.setName(name);
         subject.setSubSubject(subSubject);
         subject.setGradeLevel(gradeLevel);
         subjectRepository.save(subject);

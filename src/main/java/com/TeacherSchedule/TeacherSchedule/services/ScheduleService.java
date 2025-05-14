@@ -26,7 +26,6 @@ public class ScheduleService {
     static final int MAX_CLASSES = 6;
     static final int BREAK_SLOT = 3;
 
-    private List<Class> classes;
     private List<Integer> timeSlots;
     private Random random;
 
@@ -45,35 +44,24 @@ public class ScheduleService {
     private List<String> currentSchedule = new ArrayList<>(); // Store the generated schedule
 
     public ScheduleService() {
-        this.classes = new ArrayList<>();
         this.timeSlots = new ArrayList<>();
         this.random = new Random();
-
-        // Updated list of subjects for demo
-        classes.add(new Class("Math", 1, 1));
-        classes.add(new Class("Filipino", 2, 1));
-        classes.add(new Class("AP", 3, 1));
-        classes.add(new Class("Science", 4, 1));
-        classes.add(new Class("TLE", 5, 1));
-        classes.add(new Class("English", 6, 1));
-        classes.add(new Class("M.A.P.E.H.", 7, 1));
-        classes.add(new Class("Homeroom", 8, 1)); // Added Homeroom subject
     }
 
-    private void shuffleClasses() {
-        Collections.shuffle(classes, random);
+    private <T> void shuffleList(List<T> list) {
+        Collections.shuffle(list, random);
     }
 
-    private void createTimeSlots() {
-        int totalSlots = (END_HOUR - START_HOUR) * 60 / CLASS_DURATION_MINUTES;
-        for (int i = 0; i < totalSlots; i++) {
+    private void createTimeSlots(int numClasses) {
+        timeSlots.clear();
+        for (int i = 0; i < numClasses + 1; i++) { // +1 for possible break
             timeSlots.add(-1);
         }
     }
 
     // used for backtracking algorithm to schedule classes
-    private boolean backtrack(int classIndex, boolean breakScheduled) {
-        if (classIndex == classes.size()) {
+    private boolean backtrack(int classIndex, boolean breakScheduled, List<Subject> subjects) {
+        if (classIndex == subjects.size()) {
             return true; // All classes have been scheduled
         }
         for (int i = 0; i < timeSlots.size(); i++) {
@@ -85,12 +73,12 @@ public class ScheduleService {
                 // Check if a break has already been scheduled
                 if (!breakScheduled && i == BREAK_SLOT) {
                     timeSlots.set(i, -2); // Schedule a break
-                    if (backtrack(classIndex, true)) // Continue scheduling the same class after the break
+                    if (backtrack(classIndex, true, subjects)) // Continue scheduling the same class after the break
                         return true;
                     timeSlots.set(i, -1);
                 }
 
-                if (backtrack(classIndex + 1, breakScheduled)) // Move to the next class
+                if (backtrack(classIndex + 1, breakScheduled, subjects)) // Move to the next class
                     return true;
 
                     // Backtrack if scheduling fails
@@ -108,14 +96,21 @@ public class ScheduleService {
                     "A schedule already exists for section '" + section + "' in the school year '" + schoolYear + "'.");
         }
 
+        // Fetch subjects dynamically from the database for the selected grade level
+        List<Subject> subjects = subjectRepository.findByGradeLevel(gradeLevel);
+        if (subjects == null || subjects.isEmpty()) {
+            throw new IllegalStateException("No subjects found for grade level: " + gradeLevel);
+        }
+        shuffleList(subjects);
+        createTimeSlots(subjects.size());
+
         List<String> scheduleOutput = new ArrayList<>();
         Set<String> scheduledSubjects = new HashSet<>();
-        shuffleClasses();
-        createTimeSlots();
 
-        if (backtrack(0, false)) {
+        if (backtrack(0, false, subjects)) {
             int slotIndex = 0;
-            for (int i = START_HOUR; i < END_HOUR; i++) {
+            int classCount = 0;
+            for (int i = START_HOUR; i < END_HOUR && classCount < subjects.size(); i++) {
                 for (int j = 0; j < (60 / CLASS_DURATION_MINUTES); j++) {
                     int timeSlotIndex = slotIndex++;
                     if (timeSlotIndex >= timeSlots.size()) {
@@ -127,27 +122,22 @@ public class ScheduleService {
                     int endMinute = (startMinute + CLASS_DURATION_MINUTES) % 60;
 
                     if (timeSlots.get(timeSlotIndex) != -1 && timeSlots.get(timeSlotIndex) != -2) {
-                        int classIndex = timeSlots.get(timeSlotIndex);
-                        Class scheduledClass = classes.get(classIndex);
+                        int subjectIdx = timeSlots.get(timeSlotIndex);
+                        Subject scheduledSubject = subjects.get(subjectIdx);
 
-                        if (scheduledSubjects.contains(scheduledClass.getName())) {
+                        if (scheduledSubjects.contains(scheduledSubject.getName())) {
                             continue;
                         }
 
-                        String subjectName = scheduledClass.getName();
-                        String subSubject = null;
+                        String subjectName = scheduledSubject.getName();
+                        String subSubject = scheduledSubject.getSubSubject();
 
-                        // Fetch sub-subject from the subjects table
-                        Subject subjectEntity = subjectRepository.findByNameAndGradeLevel(subjectName, gradeLevel);
-                        if (subjectEntity != null) {
-                            subSubject = subjectEntity.getSubSubject();
-                        }
-
-                        String classEntry = String.format("%02d:%02d - %02d:%02d - %s - %s - Section %d",
-                                i, startMinute, endHour, endMinute, subjectName, 
-                                subSubject != null ? subSubject : "None", scheduledClass.getSection());
+                        String classEntry = String.format("%02d:%02d - %02d:%02d - %s - %s - Section %s",
+                                i, startMinute, endHour, endMinute, subjectName,
+                                subSubject != null ? subSubject : "None", section);
                         scheduleOutput.add(classEntry);
-                        scheduledSubjects.add(scheduledClass.getName());
+                        scheduledSubjects.add(subjectName);
+                        classCount++;
                     } else if (timeSlots.get(timeSlotIndex) == -2) {
                         scheduleOutput.add(String.format("%02d:%02d - %02d:%02d - Break - Unknown Section",
                                 i, startMinute, endHour, endMinute));
@@ -383,29 +373,5 @@ public class ScheduleService {
 
     public void deleteSchedule(Long id) {
         scheduleRepository.deleteById(id);
-    }
-}
-
-class Class {
-    private String name;
-    private int section;
-    private int id;
-
-    public Class(String name, int id, int section) {
-        this.name = name;
-        this.id = id;
-        this.section = section;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getSection() {
-        return section;
-    }
-
-    public int getId() {
-        return id;
     }
 }
