@@ -17,6 +17,8 @@ import com.TeacherSchedule.TeacherSchedule.repositories.RoomRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedTeacherRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.AttendanceRepository;
 import com.TeacherSchedule.TeacherSchedule.repositories.ArchivedScheduleRepository;
+import com.TeacherSchedule.TeacherSchedule.repositories.SubjectRepository; // Import SubjectRepository
+import com.TeacherSchedule.TeacherSchedule.models.Subject; // Import Subject class
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -69,6 +71,9 @@ public class AdminController {
 
     @Autowired
     private ArchivedScheduleRepository archivedScheduleRepository;
+
+    @Autowired
+    private SubjectRepository subjectRepository; // Inject SubjectRepository
 
     // Show teacher list, but only if admin is logged in
     @GetMapping({ "", "/" })
@@ -236,6 +241,10 @@ public class AdminController {
         }
 
         model.addAttribute("teacher", new Teacher());
+        model.addAttribute("subjects", subjectRepository.findAll().stream()
+            .map(Subject::getName) // Extract subject names
+            .distinct() // Ensure uniqueness
+            .collect(Collectors.toList())); // Collect as a list of Strings
         return "admin/add";
     }
 
@@ -599,6 +608,12 @@ public class AdminController {
 
         model.addAttribute("latestSchoolYear", latestSchoolYear);
         model.addAttribute("teacherName", teacherName);
+
+        // Add distinct subjects to the model
+        model.addAttribute("subjects", subjectRepository.findAll().stream()
+            .map(Subject::getName) // Extract subject names
+            .distinct() // Ensure uniqueness
+            .collect(Collectors.toList()));
 
         return "admin/profile";
     }

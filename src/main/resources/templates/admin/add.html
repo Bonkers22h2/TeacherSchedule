@@ -103,13 +103,7 @@
                     <div class="col">
                         <label class="form-label">Subjects</label>
                         <select th:field="*{subjects}" class="form-select" required>
-                            <option value="Math">Math</option>
-                            <option value="Filipino">Filipino</option>
-                            <option value="AP">AP</option>
-                            <option value="Science">Science</option>
-                            <option value="TLE">TLE</option>
-                            <option value="English">English</option>
-                            <option value="M.A.P.E.H.">M.A.P.E.H.</option>
+                            <option th:each="subject : ${subjects}" th:value="${subject}" th:text="${subject}"></option>
                         </select>
                     </div>
                 </div>

@@ -34,6 +34,14 @@ public class SubjectController {
                              @RequestParam(required = false) String subSubject, 
                              @RequestParam String gradeLevel, 
                              RedirectAttributes redirectAttributes) {
+        // Check if the subject and grade level already exist
+        boolean exists = subjectRepository.findAll().stream()
+            .anyMatch(subject -> subject.getName().equalsIgnoreCase(name) && subject.getGradeLevel().equalsIgnoreCase(gradeLevel));
+        if (exists) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Subject with the same name and grade level already exists.");
+            return "redirect:/subjects";
+        }
+
         Subject subject = new Subject(name, subSubject, gradeLevel);
         subjectRepository.save(subject);
         redirectAttributes.addFlashAttribute("successMessage", "Subject added successfully.");
